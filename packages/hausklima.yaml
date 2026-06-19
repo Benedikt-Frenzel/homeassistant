@@ -16,7 +16,7 @@ template:
             states('sensor.temp_feucht_flur_temperature') | float(none),
             states('sensor.temp_feucht_bad_wanne_temperature') | float(none)
           ] | reject('eq', none) | list %}
-          {{ (vals | sum / vals | count) | round(1) }}
+          {{ ((vals | sum) / (vals | count)) | round(1) }}
         attributes:
           rooms: "Flur, Bad EG"
 
@@ -33,7 +33,7 @@ template:
             states('sensor.temp_feucht_flur_humidity') | float(none),
             states('sensor.temp_feucht_bad_wanne_humidity') | float(none)
           ] | reject('eq', none) | list %}
-          {{ (vals | sum / vals | count) | round(1) }}
+          {{ ((vals | sum) / (vals | count)) | round(1) }}
         attributes:
           rooms: "Flur, Bad EG"
 
@@ -50,7 +50,7 @@ template:
             states('sensor.gw2000a_indoor_temperature') | float(none),
             states('sensor.temp_feucht_schlafzimmer_temperature') | float(none)
           ] | reject('eq', none) | list %}
-          {{ (vals | sum / vals | count) | round(1) }}
+          {{ ((vals | sum) / (vals | count)) | round(1) }}
         attributes:
           rooms: "Büro Benedikt, Schlafzimmer"
 
@@ -67,7 +67,7 @@ template:
             states('sensor.gw2000a_indoor_humidity') | float(none),
             states('sensor.temp_feucht_schlafzimmer_humidity') | float(none)
           ] | reject('eq', none) | list %}
-          {{ (vals | sum / vals | count) | round(1) }}
+          {{ ((vals | sum) / (vals | count)) | round(1) }}
         attributes:
           rooms: "Büro Benedikt, Schlafzimmer"
 
