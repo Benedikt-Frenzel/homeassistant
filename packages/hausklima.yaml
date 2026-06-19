@@ -1,0 +1,98 @@
+# Home Assistant Package: Hausklima
+# Zweck: Temperatur- und Feuchtewerte aus EG/OG zu sinnvollen Klima-Zonen bündeln.
+
+template:
+  - sensor:
+      - name: Haus EG Temperatur
+        unique_id: haus_eg_temperatur
+        icon: mdi:home-thermometer-outline
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: >
+          {{ has_value('sensor.temp_feucht_flur_temperature') or has_value('sensor.temp_feucht_bad_wanne_temperature') }}
+        state: >
+          {% set vals = [
+            states('sensor.temp_feucht_flur_temperature') | float(none),
+            states('sensor.temp_feucht_bad_wanne_temperature') | float(none)
+          ] | reject('eq', none) | list %}
+          {{ (vals | sum / vals | count) | round(1) }}
+        attributes:
+          rooms: "Flur, Bad EG"
+
+      - name: Haus EG Luftfeuchte
+        unique_id: haus_eg_luftfeuchte
+        icon: mdi:water-percent
+        unit_of_measurement: "%"
+        device_class: humidity
+        state_class: measurement
+        availability: >
+          {{ has_value('sensor.temp_feucht_flur_humidity') or has_value('sensor.temp_feucht_bad_wanne_humidity') }}
+        state: >
+          {% set vals = [
+            states('sensor.temp_feucht_flur_humidity') | float(none),
+            states('sensor.temp_feucht_bad_wanne_humidity') | float(none)
+          ] | reject('eq', none) | list %}
+          {{ (vals | sum / vals | count) | round(1) }}
+        attributes:
+          rooms: "Flur, Bad EG"
+
+      - name: Haus OG Temperatur
+        unique_id: haus_og_temperatur
+        icon: mdi:home-thermometer
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: >
+          {{ has_value('sensor.gw2000a_indoor_temperature') or has_value('sensor.temp_feucht_schlafzimmer_temperature') }}
+        state: >
+          {% set vals = [
+            states('sensor.gw2000a_indoor_temperature') | float(none),
+            states('sensor.temp_feucht_schlafzimmer_temperature') | float(none)
+          ] | reject('eq', none) | list %}
+          {{ (vals | sum / vals | count) | round(1) }}
+        attributes:
+          rooms: "Büro Benedikt, Schlafzimmer"
+
+      - name: Haus OG Luftfeuchte
+        unique_id: haus_og_luftfeuchte
+        icon: mdi:water-percent
+        unit_of_measurement: "%"
+        device_class: humidity
+        state_class: measurement
+        availability: >
+          {{ has_value('sensor.gw2000a_indoor_humidity') or has_value('sensor.temp_feucht_schlafzimmer_humidity') }}
+        state: >
+          {% set vals = [
+            states('sensor.gw2000a_indoor_humidity') | float(none),
+            states('sensor.temp_feucht_schlafzimmer_humidity') | float(none)
+          ] | reject('eq', none) | list %}
+          {{ (vals | sum / vals | count) | round(1) }}
+        attributes:
+          rooms: "Büro Benedikt, Schlafzimmer"
+
+      - name: Haus OG Außen Temperatur Delta
+        unique_id: haus_og_aussen_temperatur_delta
+        icon: mdi:thermometer-lines
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: >
+          {{ has_value('sensor.haus_og_temperatur') and has_value('sensor.gw2000a_outdoor_temperature') }}
+        state: >
+          {{ (states('sensor.haus_og_temperatur') | float(0) - states('sensor.gw2000a_outdoor_temperature') | float(0)) | round(1) }}
+        attributes:
+          meaning: "Positiv = OG wärmer als außen, Lüften lohnt eher."
+
+      - name: Haus EG Außen Temperatur Delta
+        unique_id: haus_eg_aussen_temperatur_delta
+        icon: mdi:thermometer-lines
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: >
+          {{ has_value('sensor.haus_eg_temperatur') and has_value('sensor.gw2000a_outdoor_temperature') }}
+        state: >
+          {{ (states('sensor.haus_eg_temperatur') | float(0) - states('sensor.gw2000a_outdoor_temperature') | float(0)) | round(1) }}
+        attributes:
+          meaning: "Positiv = EG wärmer als außen, Lüften lohnt eher."

@@ -47,8 +47,18 @@ views:
           red: 28
 
       - type: gauge
-        entity: sensor.gw2000a_indoor_temperature
-        name: Büro Benedikt / GW Indoor
+        entity: sensor.haus_og_temperatur
+        name: OG Durchschnitt
+        min: 10
+        max: 35
+        severity:
+          green: 18
+          yellow: 25
+          red: 28
+
+      - type: gauge
+        entity: sensor.haus_eg_temperatur
+        name: EG Durchschnitt
         min: 10
         max: 35
         severity:
@@ -57,38 +67,55 @@ views:
           red: 28
 
       - type: entities
-        title: Temperaturen
+        title: Hausklima Zonen
+        show_header_toggle: false
+        entities:
+          - entity: sensor.haus_eg_temperatur
+            name: EG Temperatur
+          - entity: sensor.haus_eg_luftfeuchte
+            name: EG Luftfeuchte
+          - entity: sensor.haus_eg_aussen_temperatur_delta
+            name: EG wärmer als außen
+          - entity: sensor.haus_og_temperatur
+            name: OG Temperatur
+          - entity: sensor.haus_og_luftfeuchte
+            name: OG Luftfeuchte
+          - entity: sensor.haus_og_aussen_temperatur_delta
+            name: OG wärmer als außen
+
+      - type: entities
+        title: Einzelräume Temperatur
         show_header_toggle: false
         entities:
           - entity: sensor.gw2000a_outdoor_temperature
             name: Garten außen
           - entity: sensor.gw2000a_indoor_temperature
-            name: Büro Benedikt
+            name: Büro Benedikt OG
           - entity: sensor.temp_feucht_schlafzimmer_temperature
-            name: Schlafzimmer
+            name: Schlafzimmer OG
           - entity: sensor.temp_feucht_bad_wanne_temperature
             name: Bad EG
           - entity: sensor.temp_feucht_flur_temperature
-            name: Flur
+            name: Flur EG
           - entity: sensor.temp_feucht_keller_klein_temperature
             name: Keller klein
           - entity: sensor.temp_feucht_keller_gross_temperature
             name: Keller groß
 
       - type: entities
-        title: Luftfeuchte
+        title: Einzelräume Luftfeuchte
         show_header_toggle: false
         entities:
           - entity: sensor.gw2000a_humidity
             name: Garten außen
           - entity: sensor.gw2000a_indoor_humidity
-            name: Büro Benedikt
+            name: Büro Benedikt OG
           - entity: sensor.temp_feucht_schlafzimmer_humidity
-            name: Schlafzimmer
+            name: Schlafzimmer OG
           - entity: sensor.temp_feucht_bad_wanne_humidity
             name: Bad EG
           - entity: sensor.temp_feucht_flur_humidity
-            name: Flur
+            name: Flur EG
 
       - type: entities
         title: Garten-Wetterstation
@@ -108,17 +135,28 @@ views:
             name: Regen erkannt
 
       - type: history-graph
-        title: Temperaturverlauf
+        title: Temperaturverlauf Zonen
         hours_to_show: 24
         entities:
           - entity: sensor.gw2000a_outdoor_temperature
             name: Außen
+          - entity: sensor.haus_eg_temperatur
+            name: EG
+          - entity: sensor.haus_og_temperatur
+            name: OG
+
+      - type: history-graph
+        title: Temperaturverlauf Räume
+        hours_to_show: 24
+        entities:
           - entity: sensor.gw2000a_indoor_temperature
             name: Büro
           - entity: sensor.temp_feucht_schlafzimmer_temperature
             name: Schlafzimmer
           - entity: sensor.temp_feucht_bad_wanne_temperature
             name: Bad
+          - entity: sensor.temp_feucht_flur_temperature
+            name: Flur
 
       - type: history-graph
         title: Lüften-Entscheidung
