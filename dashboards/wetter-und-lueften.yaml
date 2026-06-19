@@ -52,6 +52,11 @@ views:
             name: OG
             icon: mdi:home-floor-1
             color: orange
+          - type: tile
+            entity: sensor.haus_keller_luftfeuchte
+            name: Keller Feuchte
+            icon: mdi:water-percent-alert
+            color: cyan
       - type: grid
         cards:
           - type: heading
@@ -196,6 +201,91 @@ views:
                 name: Bad
               - entity: sensor.temp_feucht_flur_temperature
                 name: Flur
+
+  - title: Keller
+    path: keller
+    icon: mdi:home-floor-negative-1
+    type: sections
+    max_columns: 2
+    badges: []
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Kellerklima
+            heading_style: title
+            icon: mdi:water-percent-alert
+          - type: markdown
+            content: >
+              {% set h = states('sensor.haus_keller_luftfeuchte')|float(none) %}
+              # 💧 Keller Feuchte
+
+              {% if h is none %}
+              Noch keine Keller-Feuchte verfügbar.
+              {% elif h >= 70 %}
+              **Kritisch:** {{ h|round(1) }} %. Lüften/Entfeuchten prüfen.
+              {% elif h >= 60 %}
+              **Beobachten:** {{ h|round(1) }} %. Keller im Auge behalten.
+              {% else %}
+              **OK:** {{ h|round(1) }} %. Kellerfeuchte unauffällig.
+              {% endif %}
+          - type: tile
+            entity: sensor.haus_keller_luftfeuchte
+            name: Keller Durchschnitt Feuchte
+            color: cyan
+          - type: tile
+            entity: sensor.haus_keller_temperatur
+            name: Keller Durchschnitt Temperatur
+            color: blue
+          - type: tile
+            entity: sensor.haus_keller_feuchte_warnung
+            name: Feuchte Bewertung
+            color: amber
+      - type: grid
+        cards:
+          - type: heading
+            heading: Einzelwerte
+            heading_style: title
+            icon: mdi:home-floor-negative-1
+          - type: entities
+            title: Keller klein / groß
+            show_header_toggle: false
+            entities:
+              - entity: sensor.temp_feucht_keller_klein_temperature
+                name: Keller klein Temperatur
+              - entity: sensor.temp_feucht_keller_klein_humidity
+                name: Keller klein Feuchte
+              - entity: sensor.temp_feucht_keller_gross_temperature
+                name: Keller groß Temperatur
+              - entity: sensor.temp_feucht_keller_gross_humidity
+                name: Keller groß Feuchte
+      - type: grid
+        column_span: 2
+        cards:
+          - type: heading
+            heading: Verlauf
+            heading_style: title
+            icon: mdi:chart-line
+          - type: history-graph
+            title: 48h Keller Feuchte
+            hours_to_show: 48
+            entities:
+              - entity: sensor.haus_keller_luftfeuchte
+                name: Durchschnitt
+              - entity: sensor.temp_feucht_keller_klein_humidity
+                name: Keller klein
+              - entity: sensor.temp_feucht_keller_gross_humidity
+                name: Keller groß
+          - type: history-graph
+            title: 48h Keller Temperatur
+            hours_to_show: 48
+            entities:
+              - entity: sensor.haus_keller_temperatur
+                name: Durchschnitt
+              - entity: sensor.temp_feucht_keller_klein_temperature
+                name: Keller klein
+              - entity: sensor.temp_feucht_keller_gross_temperature
+                name: Keller groß
 
   - title: Wetterstation
     path: wetterstation

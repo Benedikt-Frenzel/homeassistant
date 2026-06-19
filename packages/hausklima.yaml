@@ -71,6 +71,54 @@ template:
         attributes:
           rooms: "Büro Benedikt, Schlafzimmer"
 
+      - name: Haus Keller Temperatur
+        unique_id: haus_keller_temperatur
+        icon: mdi:home-floor-negative-1
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: >
+          {{ has_value('sensor.temp_feucht_keller_klein_temperature') or has_value('sensor.temp_feucht_keller_gross_temperature') }}
+        state: >
+          {% set vals = [
+            states('sensor.temp_feucht_keller_klein_temperature') | float(none),
+            states('sensor.temp_feucht_keller_gross_temperature') | float(none)
+          ] | reject('eq', none) | list %}
+          {{ ((vals | sum) / (vals | count)) | round(1) }}
+        attributes:
+          rooms: "Keller klein, Keller groß"
+
+      - name: Haus Keller Luftfeuchte
+        unique_id: haus_keller_luftfeuchte
+        icon: mdi:water-percent-alert
+        unit_of_measurement: "%"
+        device_class: humidity
+        state_class: measurement
+        availability: >
+          {{ has_value('sensor.temp_feucht_keller_klein_humidity') or has_value('sensor.temp_feucht_keller_gross_humidity') }}
+        state: >
+          {% set vals = [
+            states('sensor.temp_feucht_keller_klein_humidity') | float(none),
+            states('sensor.temp_feucht_keller_gross_humidity') | float(none)
+          ] | reject('eq', none) | list %}
+          {{ ((vals | sum) / (vals | count)) | round(1) }}
+        attributes:
+          rooms: "Keller klein, Keller groß"
+          focus: "Feuchte beobachten"
+
+      - name: Haus Keller Feuchte Warnung
+        unique_id: haus_keller_feuchte_warnung
+        icon: mdi:water-alert
+        availability: >
+          {{ has_value('sensor.haus_keller_luftfeuchte') }}
+        state: >
+          {% set h = states('sensor.haus_keller_luftfeuchte') | float(0) %}
+          {% if h >= 70 %}kritisch{% elif h >= 60 %}beobachten{% else %}ok{% endif %}
+        attributes:
+          humidity: "{{ states('sensor.haus_keller_luftfeuchte') }}"
+          threshold_watch: 60
+          threshold_critical: 70
+
       - name: Haus OG Außen Temperatur Delta
         unique_id: haus_og_aussen_temperatur_delta
         icon: mdi:thermometer-lines
