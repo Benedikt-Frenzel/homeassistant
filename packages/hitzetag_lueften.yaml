@@ -1,0 +1,201 @@
+# Home Assistant Package: Hitzetag-Lüften
+# Zweck: An heißen Tagen morgens/abends ans Lüften und tagsüber ans Schließen erinnern.
+# Risiko: niedrig, nur Notifications. Keine Geräte-Steuerung.
+# Voraussetzungen:
+# - packages in configuration.yaml aktiviert
+# - notify.mobile_app_sm_a556b vorhanden
+# - weather.forecast_home vorhanden
+# - sensor.gw2000a_outdoor_temperature vorhanden
+
+input_boolean:
+  hitzetag_erwartet:
+    name: Hitzetag erwartet
+    icon: mdi:white-balance-sunny
+
+input_number:
+  hitzetag_schwelle_max:
+    name: Hitzetag Schwelle Tagesmaximum
+    min: 20
+    max: 40
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-high
+    initial: 25
+  hitzetag_lueften_morgens_unter:
+    name: Hitzetag morgens lüften unter
+    min: 5
+    max: 30
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:window-open-variant
+    initial: 20
+  hitzetag_fenster_schliessen_ab:
+    name: Hitzetag Fenster schließen ab
+    min: 10
+    max: 35
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:window-closed-variant
+    initial: 20
+  hitzetag_lueften_delta:
+    name: Hitzetag Lüften Delta innen außen
+    min: 0.5
+    max: 10
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-lines
+    initial: 1
+
+automation:
+  - id: hitzetag_forecast_helper_aktualisieren
+    alias: "Hitzetag: Forecast Helper aktualisieren"
+    description: >
+      Liest morgens die Tagesprognose und setzt input_boolean.hitzetag_erwartet,
+      wenn das Tagesmaximum über der konfigurierten Schwelle liegt.
+    mode: single
+    trigger:
+      - platform: time
+        at: "05:30:00"
+      - platform: homeassistant
+        event: start
+    action:
+      - service: weather.get_forecasts
+        target:
+          entity_id: weather.forecast_home
+        data:
+          type: daily
+        response_variable: daily_forecast
+      - variables:
+          forecast_max: "{{ daily_forecast['weather.forecast_home'].forecast[0].temperature | float(0) }}"
+          hitzetag_schwelle: "{{ states('input_number.hitzetag_schwelle_max') | float(25) }}"
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ forecast_max > hitzetag_schwelle }}"
+            sequence:
+              - service: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.hitzetag_erwartet
+        default:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.hitzetag_erwartet
+
+  - id: hitzetag_lueften_morgens
+    alias: "Hitzetag: morgens lüften"
+    description: >
+      Erinnert morgens ans Lüften, wenn laut Prognose ein Hitzetag erwartet wird
+      und die Garten-Wetterstation noch kühle Außenluft misst.
+    mode: single
+    trigger:
+      - platform: time
+        at: "06:30:00"
+      - platform: time
+        at: "07:30:00"
+      - platform: time
+        at: "08:30:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hitzetag_erwartet
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ states('sensor.gw2000a_outdoor_temperature') | float(99)
+             < states('input_number.hitzetag_lueften_morgens_unter') | float(20) }}
+      - condition: state
+        entity_id: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+        state: "off"
+    action:
+      - service: notify.mobile_app_sm_a556b
+        data:
+          title: "Heute wird es warm"
+          message: "Jetzt ist es draußen noch kühl — gute Zeit zum Lüften."
+          data:
+            tag: hitzetag_lueften_morgens
+            ttl: 0
+            priority: high
+
+  - id: hitzetag_fenster_schliessen_tagsueber
+    alias: "Hitzetag: Fenster schließen"
+    description: >
+      Erinnert daran, Fenster wieder zu schließen, wenn es draußen warm wird.
+      Später soll nur erinnert werden, wenn Fenstersensoren offene Fenster melden.
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.gw2000a_outdoor_temperature
+        above: 20
+        for: "00:10:00"
+      - platform: time
+        at: "09:30:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hitzetag_erwartet
+        state: "on"
+      - condition: time
+        after: "08:00:00"
+        before: "18:00:00"
+      - condition: template
+        value_template: >
+          {{ states('sensor.gw2000a_outdoor_temperature') | float(0)
+             > states('input_number.hitzetag_fenster_schliessen_ab') | float(20) }}
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+            state: "on"
+          - condition: state
+            entity_id: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+            state: "on"
+    action:
+      - service: notify.mobile_app_sm_a556b
+        data:
+          title: "Fenster schließen"
+          message: "Draußen sind es über 20 °C. Wenn du gelüftet hast, Fenster jetzt besser schließen."
+          data:
+            tag: hitzetag_fenster_schliessen
+            ttl: 0
+            priority: high
+
+  - id: hitzetag_lueften_abends_og
+    alias: "Hitzetag: abends OG lüften"
+    description: >
+      Erinnert abends ans Lüften im OG, wenn es draußen wieder kühl genug ist.
+      Später soll außen < innen pro Raum geprüft werden.
+    mode: single
+    trigger:
+      - platform: time
+        at: "20:00:00"
+      - platform: time
+        at: "21:00:00"
+      - platform: time
+        at: "22:00:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hitzetag_erwartet
+        state: "on"
+      - condition: template
+        value_template: >
+          {% set outdoor = states('sensor.gw2000a_outdoor_temperature') | float(99) %}
+          {% set schlafzimmer = states('sensor.temp_feucht_schlafzimmer_temperature') | float(0) %}
+          {% set gw_indoor = states('sensor.gw2000a_indoor_temperature') | float(0) %}
+          {% set delta = states('input_number.hitzetag_lueften_delta') | float(1) %}
+          {{ outdoor < (schlafzimmer - delta) or outdoor < (gw_indoor - delta) }}
+      - condition: state
+        entity_id: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+        state: "off"
+    action:
+      - service: notify.mobile_app_sm_a556b
+        data:
+          title: "OG lüften"
+          message: "Draußen ist es wieder kühler. Jetzt OG lüften, damit Schlafräume abkühlen."
+          data:
+            tag: hitzetag_lueften_abends
+            ttl: 0
+            priority: high

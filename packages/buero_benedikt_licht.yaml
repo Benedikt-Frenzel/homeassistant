@@ -1,0 +1,13 @@
+# Home Assistant Package: Büro Benedikt Licht
+# Zweck: Matter/Thread Lampen im Büro Benedikt als Gruppe steuern.
+# Voraussetzung: Entity-Renames in HA Entity Registry durchgeführt.
+
+light:
+  - platform: group
+    name: Licht Büro Benedikt Decke
+    unique_id: buero_benedikt_decke
+    entities:
+      - light.buero_benedikt_decke_02
+      - light.buero_benedikt_decke_03
+      - light.buero_benedikt_decke_04
+      - light.buero_benedikt_decke_05
