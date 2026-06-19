@@ -1,0 +1,11 @@
+# Home Assistant configuration managed by ha-packages repo.
+# Minimal base config, because Git Pull add-on checks out into /config.
+
+default_config:
+
+homeassistant:
+  packages: !include_dir_named packages
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
