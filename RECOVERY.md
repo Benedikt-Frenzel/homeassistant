@@ -7,6 +7,7 @@ Goal: if Home Assistant breaks, restore config, packages, integrations and entit
 - Git repo: root HA config and packages
 - Password store: external service credentials (`pass system/infra/...`)
 - HA backup tar: full `/config` rescue snapshots, especially `.storage/`
+- SMB backup share: `//10.12.40.2/homeassistant-backups`
 
 ## Critical files
 
@@ -51,6 +52,22 @@ Avoid `git_command: reset` unless a fresh backup exists and local tracked-file e
 cd /config
 tar -czf /config/rescue-$(date +%F-%H%M).tgz \
   .storage configuration.yaml packages automations.yaml scripts.yaml scenes.yaml
+```
+
+4. Copy rescue archive to SMB backup share:
+
+```text
+Server: 10.12.40.2
+Share: homeassistant-backups
+Username: link
+Password: pass system/gibson/smb-link
+Workgroup: WORKGROUP
+```
+
+Incident backup path used:
+
+```text
+//10.12.40.2/homeassistant-backups/incident-2026-06-19/
 ```
 
 ## Recovery sequence
