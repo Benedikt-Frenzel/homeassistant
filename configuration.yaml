@@ -31,6 +31,16 @@ google_assistant:
     - switch
     - weather
 
+lovelace:
+  mode: storage
+  dashboards:
+    wetter-und-lueften:
+      mode: yaml
+      title: Wetter & Lüften
+      icon: mdi:weather-partly-cloudy
+      show_in_sidebar: true
+      filename: dashboards/wetter-und-lueften.yaml
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml

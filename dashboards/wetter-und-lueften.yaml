@@ -1,0 +1,158 @@
+title: Wetter & Lüften
+views:
+  - title: Wetter
+    path: wetter
+    icon: mdi:weather-partly-cloudy
+    type: masonry
+    badges: []
+    cards:
+      - type: markdown
+        title: Wetter & Lüften
+        content: >
+          # 🌿 Wetter & Lüften
+
+          Außen, Innenklima und Hitzetag-Automationen auf einen Blick.
+
+          **Regel:** früh lüften, tagsüber schließen, abends OG kühlen.
+
+      - type: weather-forecast
+        entity: weather.forecast_home
+        name: Wetterbericht
+        forecast_type: daily
+        show_forecast: true
+
+      - type: entities
+        title: Hitzetag-Status
+        show_header_toggle: false
+        entities:
+          - entity: input_boolean.hitzetag_erwartet
+            name: Hitzetag erwartet
+          - entity: input_number.hitzetag_schwelle_max
+            name: Hitzetag-Schwelle
+          - entity: input_number.hitzetag_lueften_morgens_unter
+            name: Morgens lüften unter
+          - entity: input_number.hitzetag_fenster_schliessen_ab
+            name: Fenster schließen ab
+          - entity: input_number.hitzetag_lueften_delta
+            name: Lüften Delta innen/außen
+
+      - type: gauge
+        entity: sensor.gw2000a_outdoor_temperature
+        name: Außen Garten
+        min: -10
+        max: 40
+        severity:
+          green: 0
+          yellow: 20
+          red: 28
+
+      - type: gauge
+        entity: sensor.gw2000a_indoor_temperature
+        name: Büro Benedikt / GW Indoor
+        min: 10
+        max: 35
+        severity:
+          green: 18
+          yellow: 25
+          red: 28
+
+      - type: entities
+        title: Temperaturen
+        show_header_toggle: false
+        entities:
+          - entity: sensor.gw2000a_outdoor_temperature
+            name: Garten außen
+          - entity: sensor.gw2000a_indoor_temperature
+            name: Büro Benedikt
+          - entity: sensor.temp_feucht_schlafzimmer_temperature
+            name: Schlafzimmer
+          - entity: sensor.temp_feucht_bad_wanne_temperature
+            name: Bad EG
+          - entity: sensor.temp_feucht_flur_temperature
+            name: Flur
+          - entity: sensor.temp_feucht_keller_klein_temperature
+            name: Keller klein
+          - entity: sensor.temp_feucht_keller_gross_temperature
+            name: Keller groß
+
+      - type: entities
+        title: Luftfeuchte
+        show_header_toggle: false
+        entities:
+          - entity: sensor.gw2000a_humidity
+            name: Garten außen
+          - entity: sensor.gw2000a_indoor_humidity
+            name: Büro Benedikt
+          - entity: sensor.temp_feucht_schlafzimmer_humidity
+            name: Schlafzimmer
+          - entity: sensor.temp_feucht_bad_wanne_humidity
+            name: Bad EG
+          - entity: sensor.temp_feucht_flur_humidity
+            name: Flur
+
+      - type: entities
+        title: Garten-Wetterstation
+        show_header_toggle: false
+        entities:
+          - entity: sensor.gw2000a_uv_index
+            name: UV Index
+          - entity: sensor.gw2000a_solar_radiation
+            name: Solarstrahlung
+          - entity: sensor.gw2000a_wind_speed
+            name: Wind
+          - entity: sensor.gw2000a_wind_gust
+            name: Böen
+          - entity: sensor.gw2000a_rain_rate_piezo
+            name: Regenrate
+          - entity: binary_sensor.gw2000a_rain_state_piezo
+            name: Regen erkannt
+
+      - type: history-graph
+        title: Temperaturverlauf
+        hours_to_show: 24
+        entities:
+          - entity: sensor.gw2000a_outdoor_temperature
+            name: Außen
+          - entity: sensor.gw2000a_indoor_temperature
+            name: Büro
+          - entity: sensor.temp_feucht_schlafzimmer_temperature
+            name: Schlafzimmer
+          - entity: sensor.temp_feucht_bad_wanne_temperature
+            name: Bad
+
+      - type: history-graph
+        title: Lüften-Entscheidung
+        hours_to_show: 24
+        entities:
+          - entity: input_boolean.hitzetag_erwartet
+            name: Hitzetag
+          - entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+            name: Fenster Bett
+          - entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+            name: Fenster Tür
+
+      - type: entities
+        title: Schlafzimmer Fenster
+        show_header_toggle: false
+        entities:
+          - entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+            name: Fenster Bett-Seite
+          - entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+            name: Fenster Tür-Seite
+          - entity: sensor.fenster_schlafzimmer_bett_seite_battery
+            name: Batterie Bett-Seite
+          - entity: sensor.fenster_schlafzimmer_tur_seite_battery
+            name: Batterie Tür-Seite
+
+      - type: entities
+        title: Hitzetag-Automationen
+        show_header_toggle: false
+        entities:
+          - entity: automation.hitzetag_forecast_helper_aktualisieren
+            name: Forecast Helper
+          - entity: automation.hitzetag_morgens_luften
+            name: Morgens lüften
+          - entity: automation.hitzetag_fenster_schliessen
+            name: Fenster schließen
+          - entity: automation.hitzetag_abends_og_luften
+            name: Abends OG lüften
