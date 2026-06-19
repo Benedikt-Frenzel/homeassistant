@@ -9,6 +9,28 @@ Goal: if Home Assistant breaks, restore config, packages, integrations and entit
 - HA backup tar: full `/config` rescue snapshots, especially `.storage/`
 - SMB backup share: `//10.12.40.2/homeassistant-backups`
 
+## Home Assistant URLs and trusted proxies
+
+Canonical external URL:
+
+```yaml
+homeassistant:
+  external_url: https://ha.bfr.sh
+  internal_url: http://10.12.99.41:8123
+```
+
+`configuration.yaml` must include:
+
+```yaml
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 10.12.40.30   # internal reverse proxy
+    - 10.255.130.2  # Colossus site-to-site WireGuard peer
+```
+
+Source: `~/Projects/own/infra/inventory/group_vars/opnsense.yml`.
+
 ## Critical files
 
 These files must exist in `/config`:

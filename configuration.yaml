@@ -4,7 +4,17 @@
 default_config:
 
 homeassistant:
+  external_url: https://ha.bfr.sh
+  internal_url: http://10.12.99.41:8123
   packages: !include_dir_named packages
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    # Internal reverse proxy
+    - 10.12.40.30
+    # Colossus site-to-site WireGuard peer
+    - 10.255.130.2
 
 automation: !include automations.yaml
 script: !include scripts.yaml
