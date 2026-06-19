@@ -16,6 +16,21 @@ http:
     # Colossus site-to-site WireGuard peer
     - 10.255.130.2
 
+google_assistant:
+  project_id: smarthome-test-84780
+  service_account: !include smarthome-test-84780-0865b5d2c6af.json
+  report_state: true
+  expose_by_default: true
+  exposed_domains:
+    - binary_sensor
+    - fan
+    - input_boolean
+    - light
+    - media_player
+    - sensor
+    - switch
+    - weather
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml

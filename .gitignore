@@ -20,6 +20,8 @@ home-assistant_v2.db*
 *.log.*
 secrets.yaml
 secrets*.yaml
+*service-account*.json
+smarthome-test-*.json
 known_devices.yaml
 ip_bans.yaml
 OZW_Log.txt

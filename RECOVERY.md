@@ -9,6 +9,25 @@ Goal: if Home Assistant breaks, restore config, packages, integrations and entit
 - HA backup tar: full `/config` rescue snapshots, especially `.storage/`
 - SMB backup share: `//10.12.40.2/homeassistant-backups`
 
+## Google Assistant
+
+Manual Google Assistant project:
+
+```yaml
+google_assistant:
+  project_id: smarthome-test-84780
+  service_account: !include smarthome-test-84780-0865b5d2c6af.json
+  report_state: true
+```
+
+Service account JSON must exist in `/config` and must not be committed.
+
+After config pull/restart:
+
+1. Verify `https://ha.bfr.sh/api/google_assistant` returns `405 Method Not Allowed`.
+2. Run `google_assistant.request_sync`.
+3. In Google Home, say "sync my devices" if needed.
+
 ## Home Assistant URLs and trusted proxies
 
 Canonical external URL:
