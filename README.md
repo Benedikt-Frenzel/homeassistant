@@ -24,6 +24,8 @@ homeassistant:
 ## Packages
 
 - `packages/hitzetag_lueften.yaml`
+- `packages/hausklima.yaml`
+- `packages/wartung.yaml`
 - `packages/buero_benedikt_licht.yaml`
 
 ## Root config files
@@ -69,6 +71,7 @@ This repo is source of truth for tracked files:
 - `scripts.yaml`
 - `scenes.yaml`
 - `packages/*.yaml`
+- `dashboards/*.yaml`
 
 Avoid editing tracked files directly on Home Assistant. Change them in Git, push, then Git Pull add-on pulls.
 

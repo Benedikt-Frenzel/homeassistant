@@ -361,3 +361,90 @@ views:
                 name: Wind
               - entity: sensor.gw2000a_rain_rate_piezo
                 name: Regen
+
+  - title: Wartung
+    path: wartung
+    icon: mdi:tools
+    type: sections
+    max_columns: 2
+    badges: []
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Gerätegesundheit
+            heading_style: title
+            icon: mdi:heart-pulse
+          - type: markdown
+            content: >
+              {% set batt = states('sensor.wartung_batterie_warnungen') | int(0) %}
+              {% set offline = states('sensor.wartung_geraete_offline') | int(0) %}
+              # 🧰 Wartung
+
+              {% if batt == 0 and offline == 0 %}
+              **Alles unauffällig.** Keine Batterie-Warnungen und keine relevanten Offline-Geräte.
+              {% else %}
+              {% if batt > 0 %}**{{ batt }} Batterie-Warnung(en).** Details unten in der Liste.{% endif %}
+
+              {% if offline > 0 %}**{{ offline }} Offline/unknown Gerät(e).** Details unten in der Liste.{% endif %}
+              {% endif %}
+          - type: tile
+            entity: sensor.wartung_batterie_warnungen
+            name: Batterie-Warnungen
+            icon: mdi:battery-alert
+            color: red
+          - type: tile
+            entity: sensor.wartung_geraete_offline
+            name: Offline/unknown
+            icon: mdi:access-point-off
+            color: amber
+          - type: entities
+            title: Wartung Schwellen
+            show_header_toggle: false
+            entities:
+              - entity: input_number.wartung_batterie_warnschwelle
+                name: Batterie Warnschwelle
+      - type: grid
+        cards:
+          - type: heading
+            heading: Klima & Luft
+            heading_style: title
+            icon: mdi:air-filter
+          - type: tile
+            entity: sensor.wartung_luftqualitaet_status
+            name: Luftqualität
+            icon: mdi:air-filter
+            color: purple
+          - type: tile
+            entity: sensor.wartung_feuchte_status
+            name: Feuchte
+            icon: mdi:water-percent-alert
+            color: cyan
+          - type: entities
+            title: Einzelwerte
+            show_header_toggle: false
+            entities:
+              - entity: sensor.luftfilter_schlafzimmer_pm25
+                name: Schlafzimmer PM2.5
+              - entity: sensor.luftfilter_wohnzimmer_pm25
+                name: Wohnzimmer PM2.5
+              - entity: sensor.haus_keller_luftfeuchte
+                name: Keller Feuchte
+              - entity: sensor.temp_feucht_bad_wanne_humidity
+                name: Bad Feuchte
+      - type: grid
+        column_span: 2
+        cards:
+          - type: heading
+            heading: Details
+            heading_style: title
+            icon: mdi:format-list-bulleted
+          - type: markdown
+            content: >
+              ## Batterie
+
+              {{ state_attr('sensor.wartung_batterie_warnungen','entities') }}
+
+              ## Offline / unknown
+
+              {{ state_attr('sensor.wartung_geraete_offline','entities') }}

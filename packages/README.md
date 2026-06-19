@@ -30,3 +30,12 @@ Danach in Home Assistant:
   - Morgen-Lüften Notification
   - Fenster-Schließen Notification
   - Abend-OG-Lüften Notification
+- `hausklima.yaml`
+  - Zonen-Sensoren für EG, OG und Keller
+  - Temperatur-/Feuchte-Durchschnittswerte
+  - Außen-Temperatur-Deltas fürs Lüften
+- `wartung.yaml`
+  - passive Batterie-Warnungen
+  - passive Offline/unknown-Geräteübersicht
+  - passive Luftqualitäts- und Feuchtebewertung
+  - keine Notifications, keine Geräte-Automatik

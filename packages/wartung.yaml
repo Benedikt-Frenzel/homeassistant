@@ -1,0 +1,106 @@
+# Home Assistant Package: Wartung
+# Zweck: Passive Gerätegesundheit für Dashboard. Keine Notifications, keine Automatik.
+# Risiko: niedrig, nur Template-Sensoren.
+
+input_number:
+  wartung_batterie_warnschwelle:
+    name: Wartung Batterie Warnschwelle
+    min: 5
+    max: 50
+    step: 5
+    unit_of_measurement: "%"
+    icon: mdi:battery-alert
+    initial: 20
+
+template:
+  - sensor:
+      - name: Wartung Batterie Warnungen
+        unique_id: wartung_batterie_warnungen
+        icon: mdi:battery-alert-variant-outline
+        state: >
+          {% set limit = states('input_number.wartung_batterie_warnschwelle') | float(20) %}
+          {% set ns = namespace(items=[]) %}
+          {% for e in states.sensor
+             if state_attr(e.entity_id, 'device_class') == 'battery'
+             and state_attr(e.entity_id, 'unit_of_measurement') == '%'
+             and e.state | float(101) <= limit %}
+            {% set ns.items = ns.items + [e.entity_id] %}
+          {% endfor %}
+          {% for e in states.binary_sensor
+             if state_attr(e.entity_id, 'device_class') == 'battery'
+             and e.state == 'on' %}
+            {% set ns.items = ns.items + [e.entity_id] %}
+          {% endfor %}
+          {{ ns.items | unique | list | count }}
+        attributes:
+          threshold: "{{ states('input_number.wartung_batterie_warnschwelle') }}"
+          entities: >
+            {% set limit = states('input_number.wartung_batterie_warnschwelle') | float(20) %}
+            {% set ns = namespace(items=[]) %}
+            {% for e in states.sensor
+               if state_attr(e.entity_id, 'device_class') == 'battery'
+               and state_attr(e.entity_id, 'unit_of_measurement') == '%'
+               and e.state | float(101) <= limit %}
+              {% set name = state_attr(e.entity_id, 'friendly_name') or e.entity_id %}
+              {% set ns.items = ns.items + [name ~ ' (' ~ e.state ~ '%)'] %}
+            {% endfor %}
+            {% for e in states.binary_sensor
+               if state_attr(e.entity_id, 'device_class') == 'battery'
+               and e.state == 'on' %}
+              {% set name = state_attr(e.entity_id, 'friendly_name') or e.entity_id %}
+              {% set ns.items = ns.items + [name ~ ' (battery_low)'] %}
+            {% endfor %}
+            {{ '- ' ~ (ns.items | unique | list | join('\n- ')) if ns.items | count > 0 else 'keine' }}
+
+      - name: Wartung Geräte Offline
+        unique_id: wartung_geraete_offline
+        icon: mdi:access-point-off
+        state: >
+          {% set domains = ['light','switch','sensor','binary_sensor','fan','media_player','weather','input_boolean','input_number'] %}
+          {% set ns = namespace(items=[]) %}
+          {% for e in states
+             if e.entity_id.split('.')[0] in domains
+             and e.state in ['unavailable','unknown'] %}
+            {% set ns.items = ns.items + [e.entity_id] %}
+          {% endfor %}
+          {{ ns.items | count }}
+        attributes:
+          domains: "light, switch, sensor, binary_sensor, fan, media_player, weather, input_boolean, input_number"
+          entities: >
+            {% set domains = ['light','switch','sensor','binary_sensor','fan','media_player','weather','input_boolean','input_number'] %}
+            {% set ns = namespace(items=[]) %}
+            {% for e in states
+               if e.entity_id.split('.')[0] in domains
+               and e.state in ['unavailable','unknown'] %}
+              {% set name = state_attr(e.entity_id, 'friendly_name') or e.entity_id %}
+              {% set ns.items = ns.items + [name ~ ' [' ~ e.entity_id ~ ']'] %}
+            {% endfor %}
+            {{ '- ' ~ (ns.items | join('\n- ')) if ns.items | count > 0 else 'keine' }}
+
+      - name: Wartung Luftqualität Status
+        unique_id: wartung_luftqualitaet_status
+        icon: mdi:air-filter
+        state: >
+          {% set sz = states('sensor.luftfilter_schlafzimmer_pm25') | float(0) %}
+          {% set wz = states('sensor.luftfilter_wohnzimmer_pm25') | float(0) %}
+          {% set max_pm = [sz, wz] | max %}
+          {% if max_pm >= 35 %}kritisch{% elif max_pm >= 15 %}beobachten{% else %}ok{% endif %}
+        attributes:
+          schlafzimmer_pm25: "{{ states('sensor.luftfilter_schlafzimmer_pm25') }}"
+          wohnzimmer_pm25: "{{ states('sensor.luftfilter_wohnzimmer_pm25') }}"
+          threshold_watch: 15
+          threshold_critical: 35
+          note: "Passiv: keine Lüftersteuerung, keine Notification."
+
+      - name: Wartung Feuchte Status
+        unique_id: wartung_feuchte_status
+        icon: mdi:water-percent-alert
+        state: >
+          {% set keller = states('sensor.haus_keller_luftfeuchte') | float(0) %}
+          {% set bad = states('sensor.temp_feucht_bad_wanne_humidity') | float(0) %}
+          {% if keller >= 70 or bad >= 70 %}kritisch{% elif keller >= 60 or bad >= 65 %}beobachten{% else %}ok{% endif %}
+        attributes:
+          keller_luftfeuchte: "{{ states('sensor.haus_keller_luftfeuchte') }}"
+          bad_luftfeuchte: "{{ states('sensor.temp_feucht_bad_wanne_humidity') }}"
+          threshold_watch: "Keller >=60%, Bad >=65%"
+          threshold_critical: ">=70%"
