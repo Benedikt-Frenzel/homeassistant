@@ -27,6 +27,7 @@ homeassistant:
 - `packages/hausklima.yaml`
 - `packages/wartung.yaml`
 - `packages/buero_benedikt_licht.yaml`
+- `packages/argus_monitoring.yaml`
 
 ## Root config files
 
@@ -77,6 +78,7 @@ Avoid editing tracked files directly on Home Assistant. Change them in Git, push
 
 Untracked local/runtime files stay local and are ignored:
 
+- `secrets.yaml` (must contain `argus_alertmanager_webhook_id` for the Argus package)
 - `.storage/`
 - `secrets.yaml`
 - `home-assistant*.log`

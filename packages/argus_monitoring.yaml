@@ -1,0 +1,137 @@
+# Home Assistant Package: Argus Monitoring
+# Zweck: Passive Anzeige von Argus/Alertmanager-Status im HA-Dashboard.
+# Wirkung: Nur Helper-Entities aktualisieren. Keine Notifications, keine Geräte-/Haussteuerung.
+# Eingang: Alertmanager webhook_id aus secrets.yaml (`argus_alertmanager_webhook_id`).
+
+input_text:
+  argus_alert_status:
+    name: Argus Alert Status
+    max: 32
+    icon: mdi:alert-circle-outline
+  argus_alert_name:
+    name: Argus Letzter Alert
+    max: 128
+    icon: mdi:bell-alert-outline
+  argus_alert_instance:
+    name: Argus Alert Instance
+    max: 255
+    icon: mdi:target
+  argus_alert_severity:
+    name: Argus Alert Severity
+    max: 32
+    icon: mdi:alarm-light-outline
+  argus_alert_summary:
+    name: Argus Alert Summary
+    max: 255
+    icon: mdi:text-box-outline
+
+input_datetime:
+  argus_last_alert_at:
+    name: Argus Letzter Alert Zeitpunkt
+    has_date: true
+    has_time: true
+    icon: mdi:clock-alert-outline
+
+counter:
+  argus_page_alerts:
+    name: Argus Page Alerts
+    icon: mdi:alarm-light
+    step: 1
+  argus_warning_alerts:
+    name: Argus Warning Alerts
+    icon: mdi:alert-outline
+    step: 1
+
+template:
+  - sensor:
+      - name: Argus Alertmanager Status
+        unique_id: argus_alertmanager_status
+        icon: >
+          {% if is_state('input_text.argus_alert_status', 'firing') %}
+            mdi:alarm-light
+          {% elif is_state('input_text.argus_alert_status', 'resolved') %}
+            mdi:check-circle-outline
+          {% else %}
+            mdi:help-circle-outline
+          {% endif %}
+        state: >
+          {{ states('input_text.argus_alert_status') if states('input_text.argus_alert_status') not in ['unknown','unavailable',''] else 'none' }}
+        attributes:
+          alertname: "{{ states('input_text.argus_alert_name') }}"
+          severity: "{{ states('input_text.argus_alert_severity') }}"
+          instance: "{{ states('input_text.argus_alert_instance') }}"
+          summary: "{{ states('input_text.argus_alert_summary') }}"
+          last_alert_at: "{{ states('input_datetime.argus_last_alert_at') }}"
+          page_alerts: "{{ states('counter.argus_page_alerts') }}"
+          warning_alerts: "{{ states('counter.argus_warning_alerts') }}"
+
+automation:
+  - id: argus_alertmanager_webhook_erfassen
+    alias: Argus Alertmanager Webhook erfassen
+    description: >
+      Erfasst Alertmanager-Payloads von argus passiv in Helper-Entities.
+      Keine Notifications, keine Geräte- oder Haussteuerung.
+    mode: queued
+    max: 20
+    trigger:
+      - platform: webhook
+        webhook_id: !secret argus_alertmanager_webhook_id
+        local_only: false
+        allowed_methods:
+          - POST
+    action:
+      - variables:
+          alerts: "{{ trigger.json.alerts | default([]) }}"
+          first: "{{ (trigger.json.alerts | default([{}]))[0] if (trigger.json.alerts | default([])) | count > 0 else {} }}"
+          labels: "{{ first.labels | default({}) }}"
+          annotations: "{{ first.annotations | default({}) }}"
+          status: "{{ first.status | default(trigger.json.status | default('unknown')) }}"
+          severity: "{{ labels.severity | default('unknown') }}"
+          alertname: "{{ labels.alertname | default('unknown') }}"
+          instance: "{{ labels.instance | default('') }}"
+          summary: "{{ annotations.summary | default(annotations.description | default('')) }}"
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.argus_alert_status
+        data:
+          value: "{{ status }}"
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.argus_alert_name
+        data:
+          value: "{{ alertname }}"
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.argus_alert_instance
+        data:
+          value: "{{ instance[:255] }}"
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.argus_alert_severity
+        data:
+          value: "{{ severity }}"
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.argus_alert_summary
+        data:
+          value: "{{ summary[:255] }}"
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.argus_last_alert_at
+        data:
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ severity == 'page' and status == 'firing' }}"
+            sequence:
+              - service: counter.increment
+                target:
+                  entity_id: counter.argus_page_alerts
+          - conditions:
+              - condition: template
+                value_template: "{{ severity == 'warning' and status == 'firing' }}"
+            sequence:
+              - service: counter.increment
+                target:
+                  entity_id: counter.argus_warning_alerts
