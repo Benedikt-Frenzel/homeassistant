@@ -16,6 +16,12 @@ http:
     # Colossus site-to-site WireGuard peer
     - 10.255.130.2
 
+# Prometheus integration: exposes /api/prometheus for the argus scrape job.
+# See ../infra argus host_vars (HA_ARGUS_PROMETHEUS_TOKEN_B64) and the
+# `homeassistant` job in roles/observability_stack/templates/prometheus.yml.j2.
+# The endpoint authenticates with a long-lived access token for pi.ai-admin.
+prometheus:
+
 google_assistant:
   project_id: smarthome-test-84780
   service_account: !include smarthome-test-84780-0865b5d2c6af.json
