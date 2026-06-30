@@ -29,6 +29,14 @@ input_number:
     unit_of_measurement: "W"
     icon: mdi:flash-alert
     initial: 40
+  luftentfeuchter_warnen_ab_luftfeuchte:
+    name: Luftentfeuchter warnen ab Luftfeuchte
+    min: 40
+    max: 90
+    step: 1
+    unit_of_measurement: "%"
+    icon: mdi:water-percent-alert
+    initial: 60
 
 automation:
   - id: luftentfeuchter_tankwarnung_scharf_schalten
@@ -71,12 +79,18 @@ automation:
       - condition: state
         entity_id: input_boolean.luftentfeuchter_tankwarnung_aktiviert
         state: "on"
+      - condition: template
+        value_template: >
+          {{ states('sensor.haus_keller_luftfeuchte') | float(0)
+             >= states('input_number.luftentfeuchter_warnen_ab_luftfeuchte') | float(60) }}
     action:
       - service: notify.mobile_app_sm_a556b
         data:
           title: "Luftentfeuchter voll?"
           message: >
-            Die Steckdose ist an, aber der Luftentfeuchter zieht kaum noch Leistung.
+            Die Steckdose ist an, aber der Luftentfeuchter zieht kaum noch Leistung,
+            während die Keller-Luftfeuchte noch bei
+            {{ states('sensor.haus_keller_luftfeuchte') }} % liegt.
             Bitte Tank prüfen/leeren.
           data:
             tag: luftentfeuchter_tank_voll

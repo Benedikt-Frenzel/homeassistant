@@ -32,7 +32,8 @@ Danach in Home Assistant:
   - Abend-OG-Lüften Notification
 - `luftentfeuchter.yaml`
   - Tuya-Luftentfeuchter Tank-voll-Erkennung über Leistungsabfall
-  - konfigurierbare Watt-Schwellen als `input_number`
+  - berücksichtigt Keller-Luftfeuchte, damit Zielwert/Standby keine falsche Warnung auslöst
+  - konfigurierbare Watt- und Feuchte-Schwellen als `input_number`
   - Push-Notification, keine Geräte-Steuerung
 - `hausklima.yaml`
   - Zonen-Sensoren für EG, OG und Keller
