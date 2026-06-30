@@ -1,0 +1,101 @@
+# Home Assistant Package: Luftentfeuchter
+# Zweck: Benachrichtigen, wenn der Luftentfeuchter trotz eingeschalteter Steckdose
+#        dauerhaft kaum noch Leistung zieht. Das ist typischerweise der volle Tank.
+# Risiko: niedrig, nur Notification. Keine Geräte-Steuerung.
+# Voraussetzungen:
+# - switch.tuya_luftentfeuchter vorhanden
+# - sensor.tuya_luftentfeuchter_power vorhanden, Einheit W
+# - notify.mobile_app_sm_a556b vorhanden
+
+input_boolean:
+  luftentfeuchter_tankwarnung_aktiviert:
+    name: Luftentfeuchter Tankwarnung aktiviert
+    icon: mdi:water-alert
+
+input_number:
+  luftentfeuchter_laeuft_ab_watt:
+    name: Luftentfeuchter läuft ab
+    min: 50
+    max: 500
+    step: 10
+    unit_of_measurement: "W"
+    icon: mdi:flash
+    initial: 100
+  luftentfeuchter_voll_unter_watt:
+    name: Luftentfeuchter voll unter
+    min: 1
+    max: 100
+    step: 1
+    unit_of_measurement: "W"
+    icon: mdi:flash-alert
+    initial: 40
+
+automation:
+  - id: luftentfeuchter_tankwarnung_scharf_schalten
+    alias: "Luftentfeuchter: Tankwarnung scharf schalten"
+    description: >
+      Merkt, dass der Luftentfeuchter wirklich gelaufen ist. Dadurch löst die
+      Tankwarnung nicht direkt nach dem Einschalten oder bei Standby aus.
+    mode: single
+    trigger:
+      - platform: template
+        value_template: >
+          {{ states('sensor.tuya_luftentfeuchter_power') | float(0)
+             > states('input_number.luftentfeuchter_laeuft_ab_watt') | float(100) }}
+        for: "00:05:00"
+    condition:
+      - condition: state
+        entity_id: switch.tuya_luftentfeuchter
+        state: "on"
+    action:
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.luftentfeuchter_tankwarnung_aktiviert
+
+  - id: luftentfeuchter_tank_voll_notification
+    alias: "Luftentfeuchter: Tank voll Notification"
+    description: >
+      Benachrichtigt, wenn die Tuya-Steckdose eingeschaltet ist, der Entfeuchter
+      vorher gelaufen ist und die Leistungsaufnahme dauerhaft stark abfällt.
+    mode: single
+    trigger:
+      - platform: template
+        value_template: >
+          {{ states('sensor.tuya_luftentfeuchter_power') | float(999)
+             < states('input_number.luftentfeuchter_voll_unter_watt') | float(40) }}
+        for: "00:10:00"
+    condition:
+      - condition: state
+        entity_id: switch.tuya_luftentfeuchter
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.luftentfeuchter_tankwarnung_aktiviert
+        state: "on"
+    action:
+      - service: notify.mobile_app_sm_a556b
+        data:
+          title: "Luftentfeuchter voll?"
+          message: >
+            Die Steckdose ist an, aber der Luftentfeuchter zieht kaum noch Leistung.
+            Bitte Tank prüfen/leeren.
+          data:
+            tag: luftentfeuchter_tank_voll
+            ttl: 0
+            priority: high
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.luftentfeuchter_tankwarnung_aktiviert
+
+  - id: luftentfeuchter_tankwarnung_zuruecksetzen
+    alias: "Luftentfeuchter: Tankwarnung zurücksetzen"
+    description: >
+      Setzt die Tankwarnung zurück, wenn die Steckdose ausgeschaltet wird.
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: switch.tuya_luftentfeuchter
+        to: "off"
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.luftentfeuchter_tankwarnung_aktiviert
