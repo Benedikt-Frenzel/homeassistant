@@ -14,6 +14,10 @@ views:
     name: Fenster Bett
   - entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
     name: Fenster Tür
+  - entity: binary_sensor.fenster_wohnzimmer_vorgarten_contact
+    name: Wohnzimmer
+  - entity: binary_sensor.tur_haustur_contact
+    name: Haustür
   sections:
   - type: grid
     cards:
@@ -44,6 +48,40 @@ views:
       entity: sensor.haus_keller_luftfeuchte
       name: Keller Feuchte
       icon_color: cyan
+  - type: grid
+    cards:
+    - type: heading
+      heading: Fenster & Türen
+      heading_style: title
+      icon: mdi:window-open-variant
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
+      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
+      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
+      secondary: Bett-Seite
+      vertical: true
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
+      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
+      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
+      secondary: Tür-Seite
+      vertical: true
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.fenster_wohnzimmer_vorgarten_contact
+      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
+      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
+      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
+      secondary: Wohnzimmer Vorgarten
+      vertical: true
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.tur_haustur_contact
+      icon: '{% if is_state(entity, ''on'') %}mdi:door-open{% else %}mdi:door-closed{% endif %}'
+      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
+      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
+      secondary: Haustür
+      vertical: true
   - type: grid
     cards:
     - type: heading
