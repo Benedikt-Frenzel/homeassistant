@@ -1,749 +1,887 @@
 title: Wetter & Lüften
 views:
-  - title: Heute
-    path: heute
-    icon: mdi:weather-sunny-alert
-    type: sections
-    max_columns: 3
-    badges: []
-    sections:
-      - type: grid
-        cards:
-          - type: custom:mushroom-template-card
-            primary: Heute lüften?
-            secondary: >
-              {% set hitze = is_state('input_boolean.hitzetag_erwartet','on') %}
-              {% set aussen = states('sensor.gw2000a_outdoor_temperature')|float(none) %}
-              {% set og = states('sensor.haus_og_temperatur')|float(none) %}
-              {% set delta = states('sensor.haus_og_aussen_temperatur_delta')|float(none) %}
-              {% set bett = is_state('binary_sensor.fenster_schlafzimmer_bett_seite_contact','on') %}
-              {% set tuer = is_state('binary_sensor.fenster_schlafzimmer_tur_seite_contact','on') %}
-              {% if hitze and delta is not none and delta > 1 and not bett and not tuer %}
-              OG lüften lohnt: Draußen ist {{ delta|round(1) }} °C kühler.
-              {% elif hitze and aussen is not none and aussen > 20 and (bett or tuer) %}
-              Fenster schließen: Außen sind {{ aussen|round(1) }} °C.
-              {% elif hitze %}
-              Hitzetag aktiv – Fenster und Temperaturen beobachten.
-              {% else %}
-              Kein Hitzetag. Normal lüften nach Gefühl.
-              {% endif %}
-            icon: >
-              {% set hitze = is_state('input_boolean.hitzetag_erwartet','on') %}
-              {% set aussen = states('sensor.gw2000a_outdoor_temperature')|float(none) %}
-              {% set delta = states('sensor.haus_og_aussen_temperatur_delta')|float(none) %}
-              {% set bett = is_state('binary_sensor.fenster_schlafzimmer_bett_seite_contact','on') %}
-              {% set tuer = is_state('binary_sensor.fenster_schlafzimmer_tur_seite_contact','on') %}
-              {% if hitze and aussen is not none and aussen > 20 and (bett or tuer) %}mdi:window-closed-variant
-              {% elif hitze and delta is not none and delta > 1 and not bett and not tuer %}mdi:window-open-variant
-              {% elif hitze %}mdi:white-balance-sunny
-              {% else %}mdi:weather-partly-cloudy{% endif %}
-            color: >
-              {% set hitze = is_state('input_boolean.hitzetag_erwartet','on') %}
-              {% set aussen = states('sensor.gw2000a_outdoor_temperature')|float(none) %}
-              {% set delta = states('sensor.haus_og_aussen_temperatur_delta')|float(none) %}
-              {% set bett = is_state('binary_sensor.fenster_schlafzimmer_bett_seite_contact','on') %}
-              {% set tuer = is_state('binary_sensor.fenster_schlafzimmer_tur_seite_contact','on') %}
-              {% if hitze and aussen is not none and aussen > 20 and (bett or tuer) %}red
-              {% elif hitze and delta is not none and delta > 1 and not bett and not tuer %}green
-              {% elif hitze %}amber
-              {% else %}blue{% endif %}
-            vertical: true
-            multiline_secondary: true
-          - type: custom:mushroom-entity-card
-            entity: input_boolean.hitzetag_erwartet
-            name: Hitzetag
-            icon_color: amber
-          - type: custom:mushroom-entity-card
-            entity: sensor.gw2000a_outdoor_temperature
-            name: Außen
-            icon_color: green
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_eg_temperatur
-            name: EG
-            icon_color: blue
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_og_temperatur
-            name: OG
-            icon_color: orange
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_keller_luftfeuchte
-            name: Keller Feuchte
-            icon_color: cyan
-      - type: grid
-        cards:
-          - type: heading
-            heading: Wetter
-            heading_style: title
-            icon: mdi:weather-partly-cloudy
-          - type: weather-forecast
-            entity: weather.forecast_home
-            name: Wetterbericht
-            forecast_type: daily
-            show_forecast: true
-      - type: grid
-        cards:
-          - type: heading
-            heading: Schlafzimmerfenster
-            heading_style: title
-            icon: mdi:window-closed-variant
-          - type: custom:mushroom-template-card
-            entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
-            icon: >
-              {% if is_state(entity, 'on') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}
-            color: >
-              {% if is_state(entity, 'on') %}green{% else %}grey{% endif %}
-            primary: >
-              {% if is_state(entity, 'on') %}Offen{% else %}Geschlossen{% endif %}
-            secondary: Bett-Seite
-            vertical: true
-          - type: custom:mushroom-template-card
-            entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
-            icon: >
-              {% if is_state(entity, 'on') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}
-            color: >
-              {% if is_state(entity, 'on') %}green{% else %}grey{% endif %}
-            primary: >
-              {% if is_state(entity, 'on') %}Offen{% else %}Geschlossen{% endif %}
-            secondary: Tür-Seite
-            vertical: true
-          - type: entities
-            title: Automationen
-            show_header_toggle: false
-            entities:
-              - entity: automation.hitzetag_forecast_helper_aktualisieren
-                name: Forecast Helper
-              - entity: automation.hitzetag_morgens_luften
-                name: Morgens lüften
-              - entity: automation.hitzetag_fenster_schliessen
-                name: Fenster schließen
-              - entity: automation.hitzetag_abends_og_luften
-                name: Abends OG lüften
-      - type: grid
-        cards:
-          - type: heading
-            heading: Schwellen
-            heading_style: title
-            icon: mdi:tune
-          - type: entities
-            title: Hitzetag-Schwellen
-            show_header_toggle: false
-            entities:
-              - entity: input_number.hitzetag_schwelle_max
-                name: Hitzetag ab
-              - entity: input_number.hitzetag_lueften_morgens_unter
-                name: Morgens lüften unter
-              - entity: input_number.hitzetag_fenster_schliessen_ab
-                name: Fenster schließen ab
-              - entity: input_number.hitzetag_lueften_delta
-                name: Lüften Delta
+- title: Heute
+  path: heute
+  icon: mdi:weather-sunny-alert
+  type: sections
+  max_columns: 3
+  badges:
+  - entity: input_boolean.hitzetag_erwartet
+    name: Hitzetag
+  - entity: sensor.gw2000a_outdoor_temperature
+    name: Außen
+  - entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+    name: Fenster Bett
+  - entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+    name: Fenster Tür
+  sections:
+  - type: grid
+    cards:
+    - type: custom:mushroom-template-card
+      primary: Heute lüften?
+      secondary: '{% set hitze = is_state(''input_boolean.hitzetag_erwartet'',''on'') %} {% set aussen = states(''sensor.gw2000a_outdoor_temperature'')|float(none) %} {% set og = states(''sensor.haus_og_temperatur'')|float(none) %} {% set delta = states(''sensor.haus_og_aussen_temperatur_delta'')|float(none) %} {% set bett = is_state(''binary_sensor.fenster_schlafzimmer_bett_seite_contact'',''on'') %} {% set tuer = is_state(''binary_sensor.fenster_schlafzimmer_tur_seite_contact'',''on'') %} {% if hitze and delta is not none and delta > 1 and not bett and not tuer %} OG lüften lohnt: Draußen ist {{ delta|round(1) }} °C kühler. {% elif hitze and aussen is not none and aussen > 20 and (bett or tuer) %} Fenster schließen: Außen sind {{ aussen|round(1) }} °C. {% elif hitze %} Hitzetag aktiv – Fenster und Temperaturen beobachten. {% else %} Kein Hitzetag. Normal lüften nach Gefühl. {% endif %}'
+      icon: '{% set hitze = is_state(''input_boolean.hitzetag_erwartet'',''on'') %} {% set aussen = states(''sensor.gw2000a_outdoor_temperature'')|float(none) %} {% set delta = states(''sensor.haus_og_aussen_temperatur_delta'')|float(none) %} {% set bett = is_state(''binary_sensor.fenster_schlafzimmer_bett_seite_contact'',''on'') %} {% set tuer = is_state(''binary_sensor.fenster_schlafzimmer_tur_seite_contact'',''on'') %} {% if hitze and aussen is not none and aussen > 20 and (bett or tuer) %}mdi:window-closed-variant {% elif hitze and delta is not none and delta > 1 and not bett and not tuer %}mdi:window-open-variant {% elif hitze %}mdi:white-balance-sunny {% else %}mdi:weather-partly-cloudy{% endif %}'
+      color: '{% set hitze = is_state(''input_boolean.hitzetag_erwartet'',''on'') %} {% set aussen = states(''sensor.gw2000a_outdoor_temperature'')|float(none) %} {% set delta = states(''sensor.haus_og_aussen_temperatur_delta'')|float(none) %} {% set bett = is_state(''binary_sensor.fenster_schlafzimmer_bett_seite_contact'',''on'') %} {% set tuer = is_state(''binary_sensor.fenster_schlafzimmer_tur_seite_contact'',''on'') %} {% if hitze and aussen is not none and aussen > 20 and (bett or tuer) %}red {% elif hitze and delta is not none and delta > 1 and not bett and not tuer %}green {% elif hitze %}amber {% else %}blue{% endif %}'
+      vertical: true
+      multiline_secondary: true
+    - type: custom:mushroom-entity-card
+      entity: input_boolean.hitzetag_erwartet
+      name: Hitzetag
+      icon_color: amber
+    - type: custom:mushroom-entity-card
+      entity: sensor.gw2000a_outdoor_temperature
+      name: Außen
+      icon_color: green
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_eg_temperatur
+      name: EG
+      icon_color: blue
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_og_temperatur
+      name: OG
+      icon_color: orange
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_keller_luftfeuchte
+      name: Keller Feuchte
+      icon_color: cyan
+  - type: grid
+    cards:
+    - type: heading
+      heading: Wetter
+      heading_style: title
+      icon: mdi:weather-partly-cloudy
+    - type: weather-forecast
+      entity: weather.forecast_home
+      name: Wetterbericht
+      forecast_type: daily
+      show_forecast: true
+  - type: grid
+    cards:
+    - type: heading
+      heading: Schlafzimmerfenster
+      heading_style: title
+      icon: mdi:window-closed-variant
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
+      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
+      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
+      secondary: Bett-Seite
+      vertical: true
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
+      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
+      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
+      secondary: Tür-Seite
+      vertical: true
+    - type: entities
+      title: Automationen
+      show_header_toggle: false
+      entities:
+      - entity: automation.hitzetag_forecast_helper_aktualisieren
+        name: Forecast Helper
+      - entity: automation.hitzetag_morgens_luften
+        name: Morgens lüften
+      - entity: automation.hitzetag_fenster_schliessen
+        name: Fenster schließen
+      - entity: automation.hitzetag_abends_og_luften
+        name: Abends OG lüften
+  - type: grid
+    cards:
+    - type: heading
+      heading: Schwellen
+      heading_style: title
+      icon: mdi:tune
+    - type: entities
+      title: Hitzetag-Schwellen
+      show_header_toggle: false
+      entities:
+      - entity: input_number.hitzetag_schwelle_max
+        name: Hitzetag ab
+      - entity: input_number.hitzetag_lueften_morgens_unter
+        name: Morgens lüften unter
+      - entity: input_number.hitzetag_fenster_schliessen_ab
+        name: Fenster schließen ab
+      - entity: input_number.hitzetag_lueften_delta
+        name: Lüften Delta
+  - type: grid
+    column_span: 3
+    cards:
+    - type: custom:navbar-card
+      desktop:
+        position: top
+        show_labels: true
+        mode: docked
+      mobile:
+        show_labels: false
+        mode: docked
+      layout:
+        auto_padding:
+          enabled: true
+          mobile_px: 70
+          desktop_px: 60
+      routes:
+      - url: /wetter-und-lueften/heute
+        icon: mdi:weather-sunny-alert
+        label: Heute
+      - url: /wetter-und-lueften/ventilatoren
+        icon: mdi:fan
+        label: Ventilatoren
+      - url: /wetter-und-lueften/hausklima
+        icon: mdi:home-thermometer
+        label: Klima
+      - url: /wetter-und-lueften/keller
+        icon: mdi:home-floor-negative-1
+        label: Keller
+      - url: /wetter-und-lueften/wetterstation
+        icon: mdi:weather-windy
+        label: Wetter
+      - url: /wetter-und-lueften/wartung
+        icon: mdi:tools
+        label: Wartung
+- title: Ventilatoren
+  path: ventilatoren
+  icon: mdi:fan
+  type: sections
+  max_columns: 3
+  badges:
+  - entity: input_boolean.ventilatoren_empfehlung_aktiv
+    name: Empfehlung
+  - entity: sensor.gw2000a_outdoor_temperature
+    name: Außen
+  - entity: sensor.haus_og_aussen_temperatur_delta
+    name: OG Δ
+  - entity: sensor.haus_eg_aussen_temperatur_delta
+    name: EG Δ
+  sections:
+  - type: grid
+    cards:
+    - type: custom:mushroom-template-card
+      primary: Lüftungsempfehlung
+      secondary: '{% set auto = is_state(''input_boolean.ventilatoren_empfehlung_aktiv'',''on'') %} {% set aussen = states(''sensor.gw2000a_outdoor_temperature'')|float(none) %} {% set og = states(''sensor.haus_og_temperatur'')|float(none) %} {% set eg = states(''sensor.haus_eg_temperatur'')|float(none) %} {% set og_delta = states(''sensor.haus_og_aussen_temperatur_delta'')|float(none) %} {% set eg_delta = states(''sensor.haus_eg_aussen_temperatur_delta'')|float(none) %} {% set og_min = states(''input_number.ventilator_og_min'')|float(24) %} {% set delta_min = states(''input_number.ventilator_delta_min'')|float(1.5) %} {% set eg_min = states(''input_number.ventilator_eg_min'')|float(24) %} {% set a_max = states(''input_number.ventilator_aussen_max'')|float(24) %} {% if not auto %}Empfehlung ist ausgeschaltet. {% elif aussen is none or og is none or eg is none %}Daten unvollständig – bitte warten. {% elif aussen > a_max %}Fenster zu halten: Außen {{ aussen|round(1) }} °C ist zu warm. {% elif og is not none and og >= og_min and og_delta is not none and og_delta >= delta_min and eg is not none and eg >= eg_min and eg_delta is not none and eg_delta >= delta_min %}Jetzt lüften + alle Fans unterstützen. {% elif og is not none and og >= og_min and og_delta is not none and og_delta >= delta_min %}OG lüften – Tower-Fan verteilt die Luft. {% elif eg is not none and eg >= eg_min and eg_delta is not none and eg_delta >= delta_min %}EG lüften – Desktop-Fans unterstützen. {% else %}Alles entspannt. Keine Aktion nötig. {% endif %}'
+      icon: '{% set auto = is_state(''input_boolean.ventilatoren_empfehlung_aktiv'',''on'') %} {% set aussen = states(''sensor.gw2000a_outdoor_temperature'')|float(none) %} {% set og = states(''sensor.haus_og_temperatur'')|float(none) %} {% set eg = states(''sensor.haus_eg_temperatur'')|float(none) %} {% set og_delta = states(''sensor.haus_og_aussen_temperatur_delta'')|float(none) %} {% set eg_delta = states(''sensor.haus_eg_aussen_temperatur_delta'')|float(none) %} {% set og_min = states(''input_number.ventilator_og_min'')|float(24) %} {% set delta_min = states(''input_number.ventilator_delta_min'')|float(1.5) %} {% set eg_min = states(''input_number.ventilator_eg_min'')|float(24) %} {% set a_max = states(''input_number.ventilator_aussen_max'')|float(24) %} {% if not auto %}mdi:fan-off {% elif aussen is none or og is none or eg is none %}mdi:fan-alert {% elif aussen > a_max %}mdi:window-closed-variant {% elif og is not none and og >= og_min and og_delta is not none and og_delta >= delta_min %}mdi:fan-auto {% elif eg is not none and eg >= eg_min and eg_delta is not none and eg_delta >= delta_min %}mdi:fan-auto {% else %}mdi:fan-check{% endif %}'
+      color: '{% set auto = is_state(''input_boolean.ventilatoren_empfehlung_aktiv'',''on'') %} {% set aussen = states(''sensor.gw2000a_outdoor_temperature'')|float(none) %} {% set og = states(''sensor.haus_og_temperatur'')|float(none) %} {% set eg = states(''sensor.haus_eg_temperatur'')|float(none) %} {% set og_delta = states(''sensor.haus_og_aussen_temperatur_delta'')|float(none) %} {% set eg_delta = states(''sensor.haus_eg_aussen_temperatur_delta'')|float(none) %} {% set og_min = states(''input_number.ventilator_og_min'')|float(24) %} {% set delta_min = states(''input_number.ventilator_delta_min'')|float(1.5) %} {% set eg_min = states(''input_number.ventilator_eg_min'')|float(24) %} {% set a_max = states(''input_number.ventilator_aussen_max'')|float(24) %} {% if not auto %}grey {% elif aussen is none or og is none or eg is none %}amber {% elif aussen > a_max %}red {% elif og is not none and og >= og_min and og_delta is not none and og_delta >= delta_min %}green {% elif eg is not none and eg >= eg_min and eg_delta is not none and eg_delta >= delta_min %}green {% else %}blue{% endif %}'
+      vertical: true
+      multiline_secondary: true
+    - type: custom:mushroom-entity-card
+      entity: input_boolean.ventilatoren_empfehlung_aktiv
+      name: Empfehlung an
+      icon_color: teal
+    - type: custom:mushroom-entity-card
+      entity: input_boolean.hitzetag_erwartet
+      name: Hitzetag
+      icon_color: amber
+    - type: custom:mushroom-entity-card
+      entity: sensor.gw2000a_outdoor_temperature
+      name: Außen
+      icon_color: green
+  - type: grid
+    cards:
+    - type: heading
+      heading: Schnellaktionen
+      heading_style: title
+      icon: mdi:gesture-tap
+    - type: custom:mushroom-template-card
+      primary: Alle Fans aus
+      icon: mdi:fan-off
+      color: red
+      tap_action:
+        action: call-service
+        service: fan.turn_off
+        target:
+          entity_id:
+          - fan.xiaomi_tower_schlafzimmer
+          - fan.xiaomi_desktop_office
+          - fan.xiaomi_desktop_kueche
+    - type: custom:mushroom-template-card
+      primary: Lüftungsmodus
+      icon: mdi:fan-auto
+      color: green
+      tap_action:
+        action: call-service
+        service: fan.turn_on
+        target:
+          entity_id:
+          - fan.xiaomi_tower_schlafzimmer
+          - fan.xiaomi_desktop_office
+          - fan.xiaomi_desktop_kueche
+        service_data:
+          percentage: 35
+  - type: grid
+    cards:
+    - type: heading
+      heading: Schlafzimmer / OG
+      heading_style: title
+      icon: mdi:bed
+    - type: custom:mushroom-fan-card
+      entity: fan.xiaomi_tower_schlafzimmer
+      name: Tower Schlafzimmer
+      icon_animation: true
+      show_percentage_control: true
+      show_oscillate_control: true
+    - type: custom:mushroom-fan-card
+      entity: fan.luftfilter_schlafzimmer
+      name: Luftfilter Schlafzimmer
+      show_percentage_control: true
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
+      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
+      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
+      secondary: Bett-Seite
+      vertical: true
+    - type: custom:mushroom-template-card
+      entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
+      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
+      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
+      secondary: Tür-Seite
+      vertical: true
+  - type: grid
+    cards:
+    - type: heading
+      heading: EG / tagsüber
+      heading_style: title
+      icon: mdi:home-floor-0
+    - type: custom:mushroom-fan-card
+      entity: fan.xiaomi_desktop_office
+      name: Desktop Office
+      icon_animation: true
+      show_percentage_control: true
+      show_oscillate_control: true
+    - type: custom:mushroom-fan-card
+      entity: fan.xiaomi_desktop_kueche
+      name: Desktop Küche
+      icon_animation: true
+      show_percentage_control: true
+      show_oscillate_control: true
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_eg_temperatur
+      name: EG Temperatur
+      icon_color: orange
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_eg_aussen_temperatur_delta
+      name: EG wärmer als außen
+      icon_color: blue
+  - type: grid
+    cards:
+    - type: heading
+      heading: Wohnzimmer / Luftqualität
+      heading_style: title
+      icon: mdi:sofa
+    - type: custom:mushroom-fan-card
+      entity: fan.luftfilter_wohnzimmer
+      name: Luftfilter Wohnzimmer
+      show_percentage_control: true
+    - type: custom:mushroom-entity-card
+      entity: sensor.luftfilter_wohnzimmer_pm25
+      name: Wohnzimmer PM2.5
+      icon_color: teal
+    - type: custom:mushroom-entity-card
+      entity: sensor.luftfilter_schlafzimmer_pm25
+      name: Schlafzimmer PM2.5
+      icon_color: cyan
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Verlauf
+      heading_style: title
+      icon: mdi:chart-line
+    - type: custom:mini-graph-card
+      name: 24h Temperaturen
+      hours_to_show: 24
+      points_per_hour: 2
+      line_width: 3
+      show:
+        points: false
+        legend: true
+      entities:
+      - entity: sensor.gw2000a_outdoor_temperature
+        name: Außen
+        color: green
+      - entity: sensor.haus_eg_temperatur
+        name: EG
+        color: blue
+      - entity: sensor.haus_og_temperatur
+        name: OG
+        color: orange
+    - type: custom:mini-graph-card
+      name: 24h Deltas
+      hours_to_show: 24
+      points_per_hour: 2
+      line_width: 3
+      show:
+        points: false
+        legend: true
+      entities:
+      - entity: sensor.haus_og_aussen_temperatur_delta
+        name: OG Δ
+        color: orange
+      - entity: sensor.haus_eg_aussen_temperatur_delta
+        name: EG Δ
+        color: blue
+  - type: grid
+    cards:
+    - type: heading
+      heading: Schwellen
+      heading_style: title
+      icon: mdi:tune
+    - type: entities
+      title: Empfehlungs-Schwellen
+      show_header_toggle: false
+      entities:
+      - entity: input_number.ventilator_og_min
+        name: Schlafzimmer-Fan ab OG
+      - entity: input_number.ventilator_delta_min
+        name: Fan-Unterstützung ab Delta
+      - entity: input_number.ventilator_eg_min
+        name: Desktop-Fans ab EG
+      - entity: input_number.ventilator_aussen_max
+        name: Nur lüften bis Außen
+  - type: grid
+    column_span: 3
+    cards:
+    - type: custom:navbar-card
+      desktop:
+        position: top
+        show_labels: true
+        mode: docked
+      mobile:
+        show_labels: false
+        mode: docked
+      layout:
+        auto_padding:
+          enabled: true
+          mobile_px: 70
+          desktop_px: 60
+      routes:
+      - url: /wetter-und-lueften/heute
+        icon: mdi:weather-sunny-alert
+        label: Heute
+      - url: /wetter-und-lueften/ventilatoren
+        icon: mdi:fan
+        label: Ventilatoren
+      - url: /wetter-und-lueften/hausklima
+        icon: mdi:home-thermometer
+        label: Klima
+      - url: /wetter-und-lueften/keller
+        icon: mdi:home-floor-negative-1
+        label: Keller
+      - url: /wetter-und-lueften/wetterstation
+        icon: mdi:weather-windy
+        label: Wetter
+      - url: /wetter-und-lueften/wartung
+        icon: mdi:tools
+        label: Wartung
+- title: Hausklima
+  path: hausklima
+  icon: mdi:home-thermometer
+  type: sections
+  max_columns: 2
+  badges:
+  - entity: sensor.haus_eg_temperatur
+    name: EG
+  - entity: sensor.haus_og_temperatur
+    name: OG
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Erdgeschoss
+      heading_style: title
+      icon: mdi:home-floor-0
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_eg_temperatur
+      name: EG Temperatur
+      icon_color: blue
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_eg_luftfeuchte
+      name: EG Feuchte
+      icon_color: cyan
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_eg_aussen_temperatur_delta
+      name: EG wärmer als außen
+      icon_color: orange
+    - type: entities
+      title: EG Einzelwerte
+      show_header_toggle: false
+      entities:
+      - entity: sensor.temp_feucht_flur_temperature
+        name: Flur Temperatur
+      - entity: sensor.temp_feucht_flur_humidity
+        name: Flur Feuchte
+      - entity: sensor.temp_feucht_bad_wanne_temperature
+        name: Bad Temperatur
+      - entity: sensor.temp_feucht_bad_wanne_humidity
+        name: Bad Feuchte
+  - type: grid
+    cards:
+    - type: heading
+      heading: Obergeschoss
+      heading_style: title
+      icon: mdi:home-floor-1
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_og_temperatur
+      name: OG Temperatur
+      icon_color: orange
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_og_luftfeuchte
+      name: OG Feuchte
+      icon_color: cyan
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_og_aussen_temperatur_delta
+      name: OG wärmer als außen
+      icon_color: amber
+    - type: entities
+      title: OG Einzelwerte
+      show_header_toggle: false
+      entities:
+      - entity: sensor.gw2000a_indoor_temperature
+        name: Büro Temperatur
+      - entity: sensor.gw2000a_indoor_humidity
+        name: Büro Feuchte
+      - entity: sensor.temp_feucht_schlafzimmer_temperature
+        name: Schlafzimmer Temperatur
+      - entity: sensor.temp_feucht_schlafzimmer_humidity
+        name: Schlafzimmer Feuchte
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Verlauf
+      heading_style: title
+      icon: mdi:chart-line
+    - type: custom:mini-graph-card
+      name: 24h Temperaturen Zonen
+      hours_to_show: 24
+      points_per_hour: 2
+      line_width: 3
+      show:
+        points: false
+        legend: true
+      entities:
+      - entity: sensor.gw2000a_outdoor_temperature
+        name: Außen
+        color: green
+      - entity: sensor.haus_eg_temperatur
+        name: EG
+        color: blue
+      - entity: sensor.haus_og_temperatur
+        name: OG
+        color: orange
+    - type: custom:mini-graph-card
+      name: 24h Räume
+      hours_to_show: 24
+      points_per_hour: 2
+      line_width: 3
+      show:
+        points: false
+        legend: true
+      entities:
+      - entity: sensor.gw2000a_indoor_temperature
+        name: Büro
+        color: amber
+      - entity: sensor.temp_feucht_schlafzimmer_temperature
+        name: Schlafzimmer
+        color: blue
+      - entity: sensor.temp_feucht_bad_wanne_temperature
+        name: Bad
+        color: cyan
+      - entity: sensor.temp_feucht_flur_temperature
+        name: Flur
+        color: grey
+  - type: grid
+    column_span: 2
+    cards:
+    - type: custom:navbar-card
+      desktop:
+        position: top
+        show_labels: true
+        mode: docked
+      mobile:
+        show_labels: false
+        mode: docked
+      layout:
+        auto_padding:
+          enabled: true
+          mobile_px: 70
+          desktop_px: 60
+      routes:
+      - url: /wetter-und-lueften/heute
+        icon: mdi:weather-sunny-alert
+        label: Heute
+      - url: /wetter-und-lueften/ventilatoren
+        icon: mdi:fan
+        label: Ventilatoren
+      - url: /wetter-und-lueften/hausklima
+        icon: mdi:home-thermometer
+        label: Klima
+      - url: /wetter-und-lueften/keller
+        icon: mdi:home-floor-negative-1
+        label: Keller
+      - url: /wetter-und-lueften/wetterstation
+        icon: mdi:weather-windy
+        label: Wetter
+      - url: /wetter-und-lueften/wartung
+        icon: mdi:tools
+        label: Wartung
+- title: Keller
+  path: keller
+  icon: mdi:home-floor-negative-1
+  type: sections
+  max_columns: 2
+  badges:
+  - entity: sensor.haus_keller_luftfeuchte
+    name: Keller
+  sections:
+  - type: grid
+    cards:
+    - type: custom:mushroom-template-card
+      primary: Keller Feuchte
+      secondary: '{% set h = states(''sensor.haus_keller_luftfeuchte'')|float(none) %} {% if h is none %}Noch keine Daten. {% elif h >= 70 %}Kritisch: {{ h|round(1) }} % – Lüften/Entfeuchten prüfen. {% elif h >= 60 %}Beobachten: {{ h|round(1) }} %. {% else %}OK: {{ h|round(1) }} % – Kellerfeuchte unauffällig. {% endif %}'
+      icon: '{% set h = states(''sensor.haus_keller_luftfeuchte'')|float(none) %} {% if h is none %}mdi:water-percent-alert {% elif h >= 70 %}mdi:water-alert {% elif h >= 60 %}mdi:water-percent {% else %}mdi:water-check{% endif %}'
+      color: '{% set h = states(''sensor.haus_keller_luftfeuchte'')|float(none) %} {% if h is none %}grey {% elif h >= 70 %}red {% elif h >= 60 %}amber {% else %}green{% endif %}'
+      vertical: true
+      multiline_secondary: true
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_keller_luftfeuchte
+      name: Keller Feuchte
+      icon_color: cyan
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_keller_temperatur
+      name: Keller Temperatur
+      icon_color: blue
+    - type: custom:mushroom-entity-card
+      entity: sensor.haus_keller_feuchte_warnung
+      name: Feuchte Bewertung
+      icon_color: amber
+  - type: grid
+    cards:
+    - type: heading
+      heading: Einzelwerte
+      heading_style: title
+      icon: mdi:home-floor-negative-1
+    - type: entities
+      title: Keller klein / groß
+      show_header_toggle: false
+      entities:
+      - entity: sensor.temp_feucht_keller_klein_temperature
+        name: Keller klein Temperatur
+      - entity: sensor.temp_feucht_keller_klein_humidity
+        name: Keller klein Feuchte
+      - entity: sensor.temp_feucht_keller_gross_temperature
+        name: Keller groß Temperatur
+      - entity: sensor.temp_feucht_keller_gross_humidity
+        name: Keller groß Feuchte
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Verlauf
+      heading_style: title
+      icon: mdi:chart-line
+    - type: custom:mini-graph-card
+      name: 48h Keller Feuchte
+      hours_to_show: 48
+      points_per_hour: 1
+      line_width: 3
+      show:
+        points: false
+        legend: true
+      entities:
+      - entity: sensor.haus_keller_luftfeuchte
+        name: Durchschnitt
+        color: cyan
+      - entity: sensor.temp_feucht_keller_klein_humidity
+        name: Keller klein
+        color: blue
+      - entity: sensor.temp_feucht_keller_gross_humidity
+        name: Keller groß
+        color: amber
+    - type: custom:mini-graph-card
+      name: 48h Keller Temperatur
+      hours_to_show: 48
+      points_per_hour: 1
+      line_width: 3
+      show:
+        points: false
+        legend: true
+      entities:
+      - entity: sensor.haus_keller_temperatur
+        name: Durchschnitt
+        color: blue
+      - entity: sensor.temp_feucht_keller_klein_temperature
+        name: Keller klein
+        color: cyan
+      - entity: sensor.temp_feucht_keller_gross_temperature
+        name: Keller groß
+        color: amber
+  - type: grid
+    column_span: 2
+    cards:
+    - type: custom:navbar-card
+      desktop:
+        position: top
+        show_labels: true
+        mode: docked
+      mobile:
+        show_labels: false
+        mode: docked
+      layout:
+        auto_padding:
+          enabled: true
+          mobile_px: 70
+          desktop_px: 60
+      routes:
+      - url: /wetter-und-lueften/heute
+        icon: mdi:weather-sunny-alert
+        label: Heute
+      - url: /wetter-und-lueften/ventilatoren
+        icon: mdi:fan
+        label: Ventilatoren
+      - url: /wetter-und-lueften/hausklima
+        icon: mdi:home-thermometer
+        label: Klima
+      - url: /wetter-und-lueften/keller
+        icon: mdi:home-floor-negative-1
+        label: Keller
+      - url: /wetter-und-lueften/wetterstation
+        icon: mdi:weather-windy
+        label: Wetter
+      - url: /wetter-und-lueften/wartung
+        icon: mdi:tools
+        label: Wartung
+- title: Wetterstation
+  path: wetterstation
+  icon: mdi:weather-windy
+  type: sections
+  max_columns: 2
+  badges:
+  - entity: sensor.gw2000a_outdoor_temperature
+    name: Außen
+  - entity: sensor.gw2000a_wind_speed
+    name: Wind
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Garten
+      heading_style: title
+      icon: mdi:weather-windy
+    - type: custom:mushroom-entity-card
+      entity: sensor.gw2000a_outdoor_temperature
+      name: Temperatur
+      icon_color: green
+    - type: custom:mushroom-entity-card
+      entity: sensor.gw2000a_humidity
+      name: Luftfeuchte
+      icon_color: cyan
+    - type: custom:mushroom-entity-card
+      entity: sensor.gw2000a_dewpoint
+      name: Taupunkt
+      icon_color: blue
+    - type: custom:mushroom-entity-card
+      entity: sensor.gw2000a_feels_like_temperature
+      name: Gefühlt
+      icon_color: orange
+  - type: grid
+    cards:
+    - type: heading
+      heading: Sonne, Wind, Regen
+      heading_style: title
+      icon: mdi:white-balance-sunny
+    - type: entities
+      title: Wetterstation Rohwerte
+      show_header_toggle: false
+      entities:
+      - entity: sensor.gw2000a_uv_index
+        name: UV Index
+      - entity: sensor.gw2000a_solar_radiation
+        name: Solarstrahlung
+      - entity: sensor.gw2000a_solar_lux
+        name: Helligkeit
+      - entity: sensor.gw2000a_wind_speed
+        name: Wind
+      - entity: sensor.gw2000a_wind_gust
+        name: Böen
+      - entity: sensor.gw2000a_rain_rate_piezo
+        name: Regenrate
+      - entity: binary_sensor.gw2000a_rain_state_piezo
+        name: Regen erkannt
+      - entity: sensor.gw2000a_relative_pressure
+        name: Relativer Luftdruck
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Verlauf Wetterstation
+      heading_style: title
+      icon: mdi:chart-areaspline
+    - type: custom:mini-graph-card
+      name: 24h Außenwerte
+      hours_to_show: 24
+      points_per_hour: 2
+      line_width: 3
+      show:
+        points: false
+        legend: true
+      entities:
+      - entity: sensor.gw2000a_outdoor_temperature
+        name: Temperatur
+        color: green
+      - entity: sensor.gw2000a_humidity
+        name: Feuchte
+        color: cyan
+      - entity: sensor.gw2000a_wind_speed
+        name: Wind
+        color: blue
+      - entity: sensor.gw2000a_rain_rate_piezo
+        name: Regen
+        color: indigo
+  - type: grid
+    column_span: 2
+    cards:
+    - type: custom:navbar-card
+      desktop:
+        position: top
+        show_labels: true
+        mode: docked
+      mobile:
+        show_labels: false
+        mode: docked
+      layout:
+        auto_padding:
+          enabled: true
+          mobile_px: 70
+          desktop_px: 60
+      routes:
+      - url: /wetter-und-lueften/heute
+        icon: mdi:weather-sunny-alert
+        label: Heute
+      - url: /wetter-und-lueften/ventilatoren
+        icon: mdi:fan
+        label: Ventilatoren
+      - url: /wetter-und-lueften/hausklima
+        icon: mdi:home-thermometer
+        label: Klima
+      - url: /wetter-und-lueften/keller
+        icon: mdi:home-floor-negative-1
+        label: Keller
+      - url: /wetter-und-lueften/wetterstation
+        icon: mdi:weather-windy
+        label: Wetter
+      - url: /wetter-und-lueften/wartung
+        icon: mdi:tools
+        label: Wartung
+- title: Wartung
+  path: wartung
+  icon: mdi:tools
+  type: sections
+  max_columns: 2
+  badges:
+  - entity: sensor.wartung_batterie_warnungen
+    name: Batterie
+  - entity: sensor.wartung_geraete_offline
+    name: Offline
+  sections:
+  - type: grid
+    cards:
+    - type: custom:mushroom-template-card
+      primary: Gerätegesundheit
+      secondary: '{% set batt = states(''sensor.wartung_batterie_warnungen'') | int(0) %} {% set offline = states(''sensor.wartung_geraete_offline'') | int(0) %} {% if batt == 0 and offline == 0 %}Alles unauffällig. {% else %} {% if batt > 0 %}{{ batt }} Batterie-Warnung(en). {% endif %} {% if offline > 0 %}{{ offline }} Offline/unknown Gerät(e).{% endif %} {% endif %}'
+      icon: '{% set batt = states(''sensor.wartung_batterie_warnungen'') | int(0) %} {% set offline = states(''sensor.wartung_geraete_offline'') | int(0) %} {% if batt == 0 and offline == 0 %}mdi:heart-pulse {% elif batt > 0 %}mdi:battery-alert {% else %}mdi:access-point-off{% endif %}'
+      color: '{% set batt = states(''sensor.wartung_batterie_warnungen'') | int(0) %} {% set offline = states(''sensor.wartung_geraete_offline'') | int(0) %} {% if batt == 0 and offline == 0 %}green {% elif batt > 0 %}red {% else %}amber{% endif %}'
+      vertical: true
+      multiline_secondary: true
+    - type: custom:mushroom-entity-card
+      entity: sensor.wartung_batterie_warnungen
+      name: Batterie-Warnungen
+      icon_color: red
+    - type: custom:mushroom-entity-card
+      entity: sensor.wartung_geraete_offline
+      name: Offline/unknown
+      icon_color: amber
+    - type: entities
+      title: Wartung Schwellen
+      show_header_toggle: false
+      entities:
+      - entity: input_number.wartung_batterie_warnschwelle
+        name: Batterie Warnschwelle
+  - type: grid
+    cards:
+    - type: heading
+      heading: Klima & Luft
+      heading_style: title
+      icon: mdi:air-filter
+    - type: custom:mushroom-entity-card
+      entity: sensor.wartung_luftqualitaet_status
+      name: Luftqualität
+      icon_color: purple
+    - type: custom:mushroom-entity-card
+      entity: sensor.wartung_feuchte_status
+      name: Feuchte
+      icon_color: cyan
+    - type: entities
+      title: Einzelwerte
+      show_header_toggle: false
+      entities:
+      - entity: sensor.luftfilter_schlafzimmer_pm25
+        name: Schlafzimmer PM2.5
+      - entity: sensor.luftfilter_wohnzimmer_pm25
+        name: Wohnzimmer PM2.5
+      - entity: sensor.haus_keller_luftfeuchte
+        name: Keller Feuchte
+      - entity: sensor.temp_feucht_bad_wanne_humidity
+        name: Bad Feuchte
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Details
+      heading_style: title
+      icon: mdi:format-list-bulleted
+    - type: markdown
+      content: '## Batterie
 
-  - title: Hausklima
-    path: hausklima
-    icon: mdi:home-thermometer
-    type: sections
-    max_columns: 2
-    badges: []
-    sections:
-      - type: grid
-        cards:
-          - type: heading
-            heading: Erdgeschoss
-            heading_style: title
-            icon: mdi:home-floor-0
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_eg_temperatur
-            name: EG Temperatur
-            icon_color: blue
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_eg_luftfeuchte
-            name: EG Feuchte
-            icon_color: cyan
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_eg_aussen_temperatur_delta
-            name: EG wärmer als außen
-            icon_color: orange
-          - type: entities
-            title: EG Einzelwerte
-            show_header_toggle: false
-            entities:
-              - entity: sensor.temp_feucht_flur_temperature
-                name: Flur Temperatur
-              - entity: sensor.temp_feucht_flur_humidity
-                name: Flur Feuchte
-              - entity: sensor.temp_feucht_bad_wanne_temperature
-                name: Bad Temperatur
-              - entity: sensor.temp_feucht_bad_wanne_humidity
-                name: Bad Feuchte
-      - type: grid
-        cards:
-          - type: heading
-            heading: Obergeschoss
-            heading_style: title
-            icon: mdi:home-floor-1
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_og_temperatur
-            name: OG Temperatur
-            icon_color: orange
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_og_luftfeuchte
-            name: OG Feuchte
-            icon_color: cyan
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_og_aussen_temperatur_delta
-            name: OG wärmer als außen
-            icon_color: amber
-          - type: entities
-            title: OG Einzelwerte
-            show_header_toggle: false
-            entities:
-              - entity: sensor.gw2000a_indoor_temperature
-                name: Büro Temperatur
-              - entity: sensor.gw2000a_indoor_humidity
-                name: Büro Feuchte
-              - entity: sensor.temp_feucht_schlafzimmer_temperature
-                name: Schlafzimmer Temperatur
-              - entity: sensor.temp_feucht_schlafzimmer_humidity
-                name: Schlafzimmer Feuchte
-      - type: grid
-        column_span: 2
-        cards:
-          - type: heading
-            heading: Verlauf
-            heading_style: title
-            icon: mdi:chart-line
-          - type: custom:mini-graph-card
-            name: 24h Temperaturen Zonen
-            hours_to_show: 24
-            points_per_hour: 2
-            line_width: 3
-            show:
-              points: false
-              legend: true
-            entities:
-              - entity: sensor.gw2000a_outdoor_temperature
-                name: Außen
-                color: green
-              - entity: sensor.haus_eg_temperatur
-                name: EG
-                color: blue
-              - entity: sensor.haus_og_temperatur
-                name: OG
-                color: orange
-          - type: custom:mini-graph-card
-            name: 24h Räume
-            hours_to_show: 24
-            points_per_hour: 2
-            line_width: 3
-            show:
-              points: false
-              legend: true
-            entities:
-              - entity: sensor.gw2000a_indoor_temperature
-                name: Büro
-                color: amber
-              - entity: sensor.temp_feucht_schlafzimmer_temperature
-                name: Schlafzimmer
-                color: blue
-              - entity: sensor.temp_feucht_bad_wanne_temperature
-                name: Bad
-                color: cyan
-              - entity: sensor.temp_feucht_flur_temperature
-                name: Flur
-                color: grey
+        {{ state_attr(''sensor.wartung_batterie_warnungen'',''entities'') }}
 
-  - title: Keller
-    path: keller
-    icon: mdi:home-floor-negative-1
-    type: sections
-    max_columns: 2
-    badges: []
-    sections:
-      - type: grid
-        cards:
-          - type: custom:mushroom-template-card
-            primary: Keller Feuchte
-            secondary: >
-              {% set h = states('sensor.haus_keller_luftfeuchte')|float(none) %}
-              {% if h is none %}Noch keine Daten.
-              {% elif h >= 70 %}Kritisch: {{ h|round(1) }} % – Lüften/Entfeuchten prüfen.
-              {% elif h >= 60 %}Beobachten: {{ h|round(1) }} %.
-              {% else %}OK: {{ h|round(1) }} % – Kellerfeuchte unauffällig.
-              {% endif %}
-            icon: >
-              {% set h = states('sensor.haus_keller_luftfeuchte')|float(none) %}
-              {% if h is none %}mdi:water-percent-alert
-              {% elif h >= 70 %}mdi:water-alert
-              {% elif h >= 60 %}mdi:water-percent
-              {% else %}mdi:water-check{% endif %}
-            color: >
-              {% set h = states('sensor.haus_keller_luftfeuchte')|float(none) %}
-              {% if h is none %}grey
-              {% elif h >= 70 %}red
-              {% elif h >= 60 %}amber
-              {% else %}green{% endif %}
-            vertical: true
-            multiline_secondary: true
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_keller_luftfeuchte
-            name: Keller Feuchte
-            icon_color: cyan
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_keller_temperatur
-            name: Keller Temperatur
-            icon_color: blue
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_keller_feuchte_warnung
-            name: Feuchte Bewertung
-            icon_color: amber
-      - type: grid
-        cards:
-          - type: heading
-            heading: Einzelwerte
-            heading_style: title
-            icon: mdi:home-floor-negative-1
-          - type: entities
-            title: Keller klein / groß
-            show_header_toggle: false
-            entities:
-              - entity: sensor.temp_feucht_keller_klein_temperature
-                name: Keller klein Temperatur
-              - entity: sensor.temp_feucht_keller_klein_humidity
-                name: Keller klein Feuchte
-              - entity: sensor.temp_feucht_keller_gross_temperature
-                name: Keller groß Temperatur
-              - entity: sensor.temp_feucht_keller_gross_humidity
-                name: Keller groß Feuchte
-      - type: grid
-        column_span: 2
-        cards:
-          - type: heading
-            heading: Verlauf
-            heading_style: title
-            icon: mdi:chart-line
-          - type: custom:mini-graph-card
-            name: 48h Keller Feuchte
-            hours_to_show: 48
-            points_per_hour: 1
-            line_width: 3
-            show:
-              points: false
-              legend: true
-            entities:
-              - entity: sensor.haus_keller_luftfeuchte
-                name: Durchschnitt
-                color: cyan
-              - entity: sensor.temp_feucht_keller_klein_humidity
-                name: Keller klein
-                color: blue
-              - entity: sensor.temp_feucht_keller_gross_humidity
-                name: Keller groß
-                color: amber
-          - type: custom:mini-graph-card
-            name: 48h Keller Temperatur
-            hours_to_show: 48
-            points_per_hour: 1
-            line_width: 3
-            show:
-              points: false
-              legend: true
-            entities:
-              - entity: sensor.haus_keller_temperatur
-                name: Durchschnitt
-                color: blue
-              - entity: sensor.temp_feucht_keller_klein_temperature
-                name: Keller klein
-                color: cyan
-              - entity: sensor.temp_feucht_keller_gross_temperature
-                name: Keller groß
-                color: amber
+        ## Offline / unknown
 
-  - title: Wetterstation
-    path: wetterstation
-    icon: mdi:weather-windy
-    type: sections
-    max_columns: 2
-    badges: []
-    sections:
-      - type: grid
-        cards:
-          - type: heading
-            heading: Garten
-            heading_style: title
-            icon: mdi:weather-windy
-          - type: custom:mushroom-entity-card
-            entity: sensor.gw2000a_outdoor_temperature
-            name: Temperatur
-            icon_color: green
-          - type: custom:mushroom-entity-card
-            entity: sensor.gw2000a_humidity
-            name: Luftfeuchte
-            icon_color: cyan
-          - type: custom:mushroom-entity-card
-            entity: sensor.gw2000a_dewpoint
-            name: Taupunkt
-            icon_color: blue
-          - type: custom:mushroom-entity-card
-            entity: sensor.gw2000a_feels_like_temperature
-            name: Gefühlt
-            icon_color: orange
-      - type: grid
-        cards:
-          - type: heading
-            heading: Sonne, Wind, Regen
-            heading_style: title
-            icon: mdi:white-balance-sunny
-          - type: entities
-            title: Wetterstation Rohwerte
-            show_header_toggle: false
-            entities:
-              - entity: sensor.gw2000a_uv_index
-                name: UV Index
-              - entity: sensor.gw2000a_solar_radiation
-                name: Solarstrahlung
-              - entity: sensor.gw2000a_solar_lux
-                name: Helligkeit
-              - entity: sensor.gw2000a_wind_speed
-                name: Wind
-              - entity: sensor.gw2000a_wind_gust
-                name: Böen
-              - entity: sensor.gw2000a_rain_rate_piezo
-                name: Regenrate
-              - entity: binary_sensor.gw2000a_rain_state_piezo
-                name: Regen erkannt
-              - entity: sensor.gw2000a_relative_pressure
-                name: Relativer Luftdruck
-      - type: grid
-        column_span: 2
-        cards:
-          - type: heading
-            heading: Verlauf Wetterstation
-            heading_style: title
-            icon: mdi:chart-areaspline
-          - type: custom:mini-graph-card
-            name: 24h Außenwerte
-            hours_to_show: 24
-            points_per_hour: 2
-            line_width: 3
-            show:
-              points: false
-              legend: true
-            entities:
-              - entity: sensor.gw2000a_outdoor_temperature
-                name: Temperatur
-                color: green
-              - entity: sensor.gw2000a_humidity
-                name: Feuchte
-                color: cyan
-              - entity: sensor.gw2000a_wind_speed
-                name: Wind
-                color: blue
-              - entity: sensor.gw2000a_rain_rate_piezo
-                name: Regen
-                color: indigo
-
-  - title: Wartung
-    path: wartung
-    icon: mdi:tools
-    type: sections
-    max_columns: 2
-    badges: []
-    sections:
-      - type: grid
-        cards:
-          - type: custom:mushroom-template-card
-            primary: Gerätegesundheit
-            secondary: >
-              {% set batt = states('sensor.wartung_batterie_warnungen') | int(0) %}
-              {% set offline = states('sensor.wartung_geraete_offline') | int(0) %}
-              {% if batt == 0 and offline == 0 %}Alles unauffällig.
-              {% else %}
-              {% if batt > 0 %}{{ batt }} Batterie-Warnung(en). {% endif %}
-              {% if offline > 0 %}{{ offline }} Offline/unknown Gerät(e).{% endif %}
-              {% endif %}
-            icon: >
-              {% set batt = states('sensor.wartung_batterie_warnungen') | int(0) %}
-              {% set offline = states('sensor.wartung_geraete_offline') | int(0) %}
-              {% if batt == 0 and offline == 0 %}mdi:heart-pulse
-              {% elif batt > 0 %}mdi:battery-alert
-              {% else %}mdi:access-point-off{% endif %}
-            color: >
-              {% set batt = states('sensor.wartung_batterie_warnungen') | int(0) %}
-              {% set offline = states('sensor.wartung_geraete_offline') | int(0) %}
-              {% if batt == 0 and offline == 0 %}green
-              {% elif batt > 0 %}red
-              {% else %}amber{% endif %}
-            vertical: true
-            multiline_secondary: true
-          - type: custom:mushroom-entity-card
-            entity: sensor.wartung_batterie_warnungen
-            name: Batterie-Warnungen
-            icon_color: red
-          - type: custom:mushroom-entity-card
-            entity: sensor.wartung_geraete_offline
-            name: Offline/unknown
-            icon_color: amber
-          - type: entities
-            title: Wartung Schwellen
-            show_header_toggle: false
-            entities:
-              - entity: input_number.wartung_batterie_warnschwelle
-                name: Batterie Warnschwelle
-      - type: grid
-        cards:
-          - type: heading
-            heading: Klima & Luft
-            heading_style: title
-            icon: mdi:air-filter
-          - type: custom:mushroom-entity-card
-            entity: sensor.wartung_luftqualitaet_status
-            name: Luftqualität
-            icon_color: purple
-          - type: custom:mushroom-entity-card
-            entity: sensor.wartung_feuchte_status
-            name: Feuchte
-            icon_color: cyan
-          - type: entities
-            title: Einzelwerte
-            show_header_toggle: false
-            entities:
-              - entity: sensor.luftfilter_schlafzimmer_pm25
-                name: Schlafzimmer PM2.5
-              - entity: sensor.luftfilter_wohnzimmer_pm25
-                name: Wohnzimmer PM2.5
-              - entity: sensor.haus_keller_luftfeuchte
-                name: Keller Feuchte
-              - entity: sensor.temp_feucht_bad_wanne_humidity
-                name: Bad Feuchte
-      - type: grid
-        column_span: 2
-        cards:
-          - type: heading
-            heading: Details
-            heading_style: title
-            icon: mdi:format-list-bulleted
-          - type: markdown
-            content: >
-              ## Batterie
-
-              {{ state_attr('sensor.wartung_batterie_warnungen','entities') }}
-
-              ## Offline / unknown
-
-              {{ state_attr('sensor.wartung_geraete_offline','entities') }}
-
-  - title: Ventilatoren
-    path: ventilatoren
-    icon: mdi:fan
-    type: sections
-    max_columns: 3
-    badges: []
-    sections:
-      - type: grid
-        cards:
-          - type: custom:mushroom-template-card
-            primary: Lüftungsempfehlung
-            secondary: >
-              {% set auto = is_state('input_boolean.ventilatoren_empfehlung_aktiv','on') %}
-              {% set aussen = states('sensor.gw2000a_outdoor_temperature')|float(none) %}
-              {% set og = states('sensor.haus_og_temperatur')|float(none) %}
-              {% set eg = states('sensor.haus_eg_temperatur')|float(none) %}
-              {% set og_delta = states('sensor.haus_og_aussen_temperatur_delta')|float(none) %}
-              {% set eg_delta = states('sensor.haus_eg_aussen_temperatur_delta')|float(none) %}
-              {% set og_min = states('input_number.ventilator_og_min')|float(24) %}
-              {% set delta_min = states('input_number.ventilator_delta_min')|float(1.5) %}
-              {% set eg_min = states('input_number.ventilator_eg_min')|float(24) %}
-              {% set a_max = states('input_number.ventilator_aussen_max')|float(24) %}
-              {% if not auto %}Empfehlung ist ausgeschaltet.
-              {% elif aussen is none or og is none or eg is none %}Daten unvollständig – bitte warten.
-              {% elif aussen > a_max %}Fenster zu halten: Außen {{ aussen|round(1) }} °C ist zu warm.
-              {% elif og is not none and og >= og_min and og_delta is not none and og_delta >= delta_min and eg is not none and eg >= eg_min and eg_delta is not none and eg_delta >= delta_min %}Jetzt lüften + alle Fans unterstützen.
-              {% elif og is not none and og >= og_min and og_delta is not none and og_delta >= delta_min %}OG lüften – Tower-Fan verteilt die Luft.
-              {% elif eg is not none and eg >= eg_min and eg_delta is not none and eg_delta >= delta_min %}EG lüften – Desktop-Fans unterstützen.
-              {% else %}Alles entspannt. Keine Aktion nötig.
-              {% endif %}
-            icon: >
-              {% set auto = is_state('input_boolean.ventilatoren_empfehlung_aktiv','on') %}
-              {% set aussen = states('sensor.gw2000a_outdoor_temperature')|float(none) %}
-              {% set og = states('sensor.haus_og_temperatur')|float(none) %}
-              {% set eg = states('sensor.haus_eg_temperatur')|float(none) %}
-              {% set og_delta = states('sensor.haus_og_aussen_temperatur_delta')|float(none) %}
-              {% set eg_delta = states('sensor.haus_eg_aussen_temperatur_delta')|float(none) %}
-              {% set og_min = states('input_number.ventilator_og_min')|float(24) %}
-              {% set delta_min = states('input_number.ventilator_delta_min')|float(1.5) %}
-              {% set eg_min = states('input_number.ventilator_eg_min')|float(24) %}
-              {% set a_max = states('input_number.ventilator_aussen_max')|float(24) %}
-              {% if not auto %}mdi:fan-off
-              {% elif aussen is none or og is none or eg is none %}mdi:fan-alert
-              {% elif aussen > a_max %}mdi:window-closed-variant
-              {% elif og is not none and og >= og_min and og_delta is not none and og_delta >= delta_min %}mdi:fan-auto
-              {% elif eg is not none and eg >= eg_min and eg_delta is not none and eg_delta >= delta_min %}mdi:fan-auto
-              {% else %}mdi:fan-check{% endif %}
-            color: >
-              {% set auto = is_state('input_boolean.ventilatoren_empfehlung_aktiv','on') %}
-              {% set aussen = states('sensor.gw2000a_outdoor_temperature')|float(none) %}
-              {% set og = states('sensor.haus_og_temperatur')|float(none) %}
-              {% set eg = states('sensor.haus_eg_temperatur')|float(none) %}
-              {% set og_delta = states('sensor.haus_og_aussen_temperatur_delta')|float(none) %}
-              {% set eg_delta = states('sensor.haus_eg_aussen_temperatur_delta')|float(none) %}
-              {% set og_min = states('input_number.ventilator_og_min')|float(24) %}
-              {% set delta_min = states('input_number.ventilator_delta_min')|float(1.5) %}
-              {% set eg_min = states('input_number.ventilator_eg_min')|float(24) %}
-              {% set a_max = states('input_number.ventilator_aussen_max')|float(24) %}
-              {% if not auto %}grey
-              {% elif aussen is none or og is none or eg is none %}amber
-              {% elif aussen > a_max %}red
-              {% elif og is not none and og >= og_min and og_delta is not none and og_delta >= delta_min %}green
-              {% elif eg is not none and eg >= eg_min and eg_delta is not none and eg_delta >= delta_min %}green
-              {% else %}blue{% endif %}
-            vertical: true
-            multiline_secondary: true
-          - type: custom:mushroom-entity-card
-            entity: input_boolean.ventilatoren_empfehlung_aktiv
-            name: Empfehlung an
-            icon_color: teal
-          - type: custom:mushroom-entity-card
-            entity: input_boolean.hitzetag_erwartet
-            name: Hitzetag
-            icon_color: amber
-          - type: custom:mushroom-entity-card
-            entity: sensor.gw2000a_outdoor_temperature
-            name: Außen
-            icon_color: green
-      - type: grid
-        cards:
-          - type: heading
-            heading: Schlafzimmer / OG
-            heading_style: title
-            icon: mdi:bed
-          - type: custom:mushroom-fan-card
-            entity: fan.xiaomi_tower_schlafzimmer
-            name: Tower Schlafzimmer
-            icon_animation: true
-            show_percentage_control: true
-            show_oscillate_control: true
-          - type: custom:mushroom-fan-card
-            entity: fan.luftfilter_schlafzimmer
-            name: Luftfilter Schlafzimmer
-            show_percentage_control: true
-          - type: custom:mushroom-template-card
-            entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
-            icon: >
-              {% if is_state(entity, 'on') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}
-            color: >
-              {% if is_state(entity, 'on') %}green{% else %}grey{% endif %}
-            primary: >
-              {% if is_state(entity, 'on') %}Offen{% else %}Geschlossen{% endif %}
-            secondary: Bett-Seite
-            vertical: true
-          - type: custom:mushroom-template-card
-            entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
-            icon: >
-              {% if is_state(entity, 'on') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}
-            color: >
-              {% if is_state(entity, 'on') %}green{% else %}grey{% endif %}
-            primary: >
-              {% if is_state(entity, 'on') %}Offen{% else %}Geschlossen{% endif %}
-            secondary: Tür-Seite
-            vertical: true
-      - type: grid
-        cards:
-          - type: heading
-            heading: EG / tagsüber
-            heading_style: title
-            icon: mdi:home-floor-0
-          - type: custom:mushroom-fan-card
-            entity: fan.xiaomi_desktop_office
-            name: Desktop Office
-            icon_animation: true
-            show_percentage_control: true
-            show_oscillate_control: true
-          - type: custom:mushroom-fan-card
-            entity: fan.xiaomi_desktop_kueche
-            name: Desktop Küche
-            icon_animation: true
-            show_percentage_control: true
-            show_oscillate_control: true
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_eg_temperatur
-            name: EG Temperatur
-            icon_color: orange
-          - type: custom:mushroom-entity-card
-            entity: sensor.haus_eg_aussen_temperatur_delta
-            name: EG wärmer als außen
-            icon_color: blue
-      - type: grid
-        cards:
-          - type: heading
-            heading: Wohnzimmer / Luftqualität
-            heading_style: title
-            icon: mdi:sofa
-          - type: custom:mushroom-fan-card
-            entity: fan.luftfilter_wohnzimmer
-            name: Luftfilter Wohnzimmer
-            show_percentage_control: true
-          - type: custom:mushroom-entity-card
-            entity: sensor.luftfilter_wohnzimmer_pm25
-            name: Wohnzimmer PM2.5
-            icon_color: teal
-          - type: custom:mushroom-entity-card
-            entity: sensor.luftfilter_schlafzimmer_pm25
-            name: Schlafzimmer PM2.5
-            icon_color: cyan
-      - type: grid
-        column_span: 2
-        cards:
-          - type: heading
-            heading: Verlauf
-            heading_style: title
-            icon: mdi:chart-line
-          - type: custom:mini-graph-card
-            name: 24h Temperaturen
-            hours_to_show: 24
-            points_per_hour: 2
-            line_width: 3
-            show:
-              points: false
-              legend: true
-            entities:
-              - entity: sensor.gw2000a_outdoor_temperature
-                name: Außen
-                color: green
-              - entity: sensor.haus_eg_temperatur
-                name: EG
-                color: blue
-              - entity: sensor.haus_og_temperatur
-                name: OG
-                color: orange
-          - type: custom:mini-graph-card
-            name: 24h Deltas
-            hours_to_show: 24
-            points_per_hour: 2
-            line_width: 3
-            show:
-              points: false
-              legend: true
-            entities:
-              - entity: sensor.haus_og_aussen_temperatur_delta
-                name: OG Δ
-                color: orange
-              - entity: sensor.haus_eg_aussen_temperatur_delta
-                name: EG Δ
-                color: blue
-      - type: grid
-        cards:
-          - type: heading
-            heading: Schwellen
-            heading_style: title
-            icon: mdi:tune
-          - type: entities
-            title: Empfehlungs-Schwellen
-            show_header_toggle: false
-            entities:
-              - entity: input_number.ventilator_og_min
-                name: Schlafzimmer-Fan ab OG
-              - entity: input_number.ventilator_delta_min
-                name: Fan-Unterstützung ab Delta
-              - entity: input_number.ventilator_eg_min
-                name: Desktop-Fans ab EG
-              - entity: input_number.ventilator_aussen_max
-                name: Nur lüften bis Außen
+        {{ state_attr(''sensor.wartung_geraete_offline'',''entities'') }}'
+  - type: grid
+    column_span: 2
+    cards:
+    - type: custom:navbar-card
+      desktop:
+        position: top
+        show_labels: true
+        mode: docked
+      mobile:
+        show_labels: false
+        mode: docked
+      layout:
+        auto_padding:
+          enabled: true
+          mobile_px: 70
+          desktop_px: 60
+      routes:
+      - url: /wetter-und-lueften/heute
+        icon: mdi:weather-sunny-alert
+        label: Heute
+      - url: /wetter-und-lueften/ventilatoren
+        icon: mdi:fan
+        label: Ventilatoren
+      - url: /wetter-und-lueften/hausklima
+        icon: mdi:home-thermometer
+        label: Klima
+      - url: /wetter-und-lueften/keller
+        icon: mdi:home-floor-negative-1
+        label: Keller
+      - url: /wetter-und-lueften/wetterstation
+        icon: mdi:weather-windy
+        label: Wetter
+      - url: /wetter-und-lueften/wartung
+        icon: mdi:tools
+        label: Wartung
