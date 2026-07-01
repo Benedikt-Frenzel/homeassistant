@@ -40,6 +40,12 @@ google_assistant:
 lovelace:
   mode: storage
   dashboards:
+    argus:
+      mode: yaml
+      title: Argus
+      icon: mdi:monitor-dashboard
+      show_in_sidebar: true
+      filename: dashboards/argus.yaml
     wetter-und-lueften:
       mode: yaml
       title: Wetter & Lüften

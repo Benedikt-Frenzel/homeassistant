@@ -1,0 +1,68 @@
+title: Argus
+views:
+  - title: Übersicht
+    path: uebersicht
+    icon: mdi:monitor-dashboard
+    type: sections
+    max_columns: 2
+    badges: []
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Monitoring Alerts
+            heading_style: title
+            icon: mdi:alarm-light-outline
+          - type: custom:mushroom-entity-card
+            entity: sensor.argus_alertmanager_status
+            name: Status
+            icon_color: red
+          - type: custom:mushroom-entity-card
+            entity: input_datetime.argus_last_alert_at
+            name: Letzter Alert
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: counter.argus_page_alerts
+            name: Page Alerts
+            icon_color: red
+          - type: custom:mushroom-entity-card
+            entity: counter.argus_warning_alerts
+            name: Warnings
+            icon_color: amber
+      - type: grid
+        cards:
+          - type: heading
+            heading: Letzter Alert
+            heading_style: title
+            icon: mdi:bell-alert-outline
+          - type: entities
+            title: Payload-Zusammenfassung
+            show_header_toggle: false
+            entities:
+              - entity: input_text.argus_alert_status
+                name: Status
+              - entity: input_text.argus_alert_severity
+                name: Severity
+              - entity: input_text.argus_alert_name
+                name: Alertname
+              - entity: input_text.argus_alert_instance
+                name: Instance
+              - entity: input_text.argus_alert_summary
+                name: Summary
+          - type: markdown
+            content: >
+              ## Argus Alertmanager
+
+              **Status:** {{ states('input_text.argus_alert_status') }}
+
+              **Alert:** {{ states('input_text.argus_alert_name') }}
+
+              **Severity:** {{ states('input_text.argus_alert_severity') }}
+
+              **Instance:** {{ states('input_text.argus_alert_instance') }}
+
+              **Summary:** {{ states('input_text.argus_alert_summary') }}
+
+              **Letzter Eingang:** {{ states('input_datetime.argus_last_alert_at') }}
+
+              Diese View ist passiv: keine HA-Notification, keine Geräte-/Haussteuerung.
