@@ -56,62 +56,12 @@ views:
       forecast_type: daily
       show_forecast: true
   - type: grid
-    cards:
-    - type: heading
-      heading: Schlafzimmerfenster
-      heading_style: title
-      icon: mdi:window-closed-variant
-    - type: custom:mushroom-template-card
-      entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
-      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
-      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
-      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
-      secondary: Bett-Seite
-      vertical: true
-    - type: custom:mushroom-template-card
-      entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
-      icon: '{% if is_state(entity, ''on'') %}mdi:window-open-variant{% else %}mdi:window-closed-variant{% endif %}'
-      color: '{% if is_state(entity, ''on'') %}green{% else %}grey{% endif %}'
-      primary: '{% if is_state(entity, ''on'') %}Offen{% else %}Geschlossen{% endif %}'
-      secondary: Tür-Seite
-      vertical: true
-    - type: entities
-      title: Automationen
-      show_header_toggle: false
-      entities:
-      - entity: automation.hitzetag_forecast_helper_aktualisieren
-        name: Forecast Helper
-      - entity: automation.hitzetag_morgens_luften
-        name: Morgens lüften
-      - entity: automation.hitzetag_fenster_schliessen
-        name: Fenster schließen
-      - entity: automation.hitzetag_abends_og_luften
-        name: Abends OG lüften
-  - type: grid
-    cards:
-    - type: heading
-      heading: Schwellen
-      heading_style: title
-      icon: mdi:tune
-    - type: entities
-      title: Hitzetag-Schwellen
-      show_header_toggle: false
-      entities:
-      - entity: input_number.hitzetag_schwelle_max
-        name: Hitzetag ab
-      - entity: input_number.hitzetag_lueften_morgens_unter
-        name: Morgens lüften unter
-      - entity: input_number.hitzetag_fenster_schliessen_ab
-        name: Fenster schließen ab
-      - entity: input_number.hitzetag_lueften_delta
-        name: Lüften Delta
-  - type: grid
     column_span: 3
     cards:
     - type: custom:navbar-card
       desktop:
-        position: top
-        show_labels: true
+        position: bottom
+        show_labels: false
         mode: docked
       mobile:
         show_labels: false
@@ -121,7 +71,7 @@ views:
           enabled: true
           mobile_px: 70
           desktop_px: 60
-      routes:
+      routes: &id001
       - url: /wetter-und-lueften/heute
         icon: mdi:weather-sunny-alert
         label: Heute
@@ -140,6 +90,9 @@ views:
       - url: /wetter-und-lueften/wartung
         icon: mdi:tools
         label: Wartung
+      - url: /wetter-und-lueften/einstellungen
+        icon: mdi:cog
+        label: Einstellungen
 - title: Ventilatoren
   path: ventilatoren
   icon: mdi:fan
@@ -323,30 +276,12 @@ views:
         name: EG Δ
         color: blue
   - type: grid
-    cards:
-    - type: heading
-      heading: Schwellen
-      heading_style: title
-      icon: mdi:tune
-    - type: entities
-      title: Empfehlungs-Schwellen
-      show_header_toggle: false
-      entities:
-      - entity: input_number.ventilator_og_min
-        name: Schlafzimmer-Fan ab OG
-      - entity: input_number.ventilator_delta_min
-        name: Fan-Unterstützung ab Delta
-      - entity: input_number.ventilator_eg_min
-        name: Desktop-Fans ab EG
-      - entity: input_number.ventilator_aussen_max
-        name: Nur lüften bis Außen
-  - type: grid
     column_span: 3
     cards:
     - type: custom:navbar-card
       desktop:
-        position: top
-        show_labels: true
+        position: bottom
+        show_labels: false
         mode: docked
       mobile:
         show_labels: false
@@ -356,25 +291,7 @@ views:
           enabled: true
           mobile_px: 70
           desktop_px: 60
-      routes:
-      - url: /wetter-und-lueften/heute
-        icon: mdi:weather-sunny-alert
-        label: Heute
-      - url: /wetter-und-lueften/ventilatoren
-        icon: mdi:fan
-        label: Ventilatoren
-      - url: /wetter-und-lueften/hausklima
-        icon: mdi:home-thermometer
-        label: Klima
-      - url: /wetter-und-lueften/keller
-        icon: mdi:home-floor-negative-1
-        label: Keller
-      - url: /wetter-und-lueften/wetterstation
-        icon: mdi:weather-windy
-        label: Wetter
-      - url: /wetter-und-lueften/wartung
-        icon: mdi:tools
-        label: Wartung
+      routes: *id001
 - title: Hausklima
   path: hausklima
   icon: mdi:home-thermometer
@@ -497,8 +414,8 @@ views:
     cards:
     - type: custom:navbar-card
       desktop:
-        position: top
-        show_labels: true
+        position: bottom
+        show_labels: false
         mode: docked
       mobile:
         show_labels: false
@@ -508,25 +425,7 @@ views:
           enabled: true
           mobile_px: 70
           desktop_px: 60
-      routes:
-      - url: /wetter-und-lueften/heute
-        icon: mdi:weather-sunny-alert
-        label: Heute
-      - url: /wetter-und-lueften/ventilatoren
-        icon: mdi:fan
-        label: Ventilatoren
-      - url: /wetter-und-lueften/hausklima
-        icon: mdi:home-thermometer
-        label: Klima
-      - url: /wetter-und-lueften/keller
-        icon: mdi:home-floor-negative-1
-        label: Keller
-      - url: /wetter-und-lueften/wetterstation
-        icon: mdi:weather-windy
-        label: Wetter
-      - url: /wetter-und-lueften/wartung
-        icon: mdi:tools
-        label: Wartung
+      routes: *id001
 - title: Keller
   path: keller
   icon: mdi:home-floor-negative-1
@@ -545,10 +444,6 @@ views:
       color: '{% set h = states(''sensor.haus_keller_luftfeuchte'')|float(none) %} {% if h is none %}grey {% elif h >= 70 %}red {% elif h >= 60 %}amber {% else %}green{% endif %}'
       vertical: true
       multiline_secondary: true
-    - type: custom:mushroom-entity-card
-      entity: sensor.haus_keller_luftfeuchte
-      name: Keller Feuchte
-      icon_color: cyan
     - type: custom:mushroom-entity-card
       entity: sensor.haus_keller_temperatur
       name: Keller Temperatur
@@ -623,8 +518,8 @@ views:
     cards:
     - type: custom:navbar-card
       desktop:
-        position: top
-        show_labels: true
+        position: bottom
+        show_labels: false
         mode: docked
       mobile:
         show_labels: false
@@ -634,25 +529,7 @@ views:
           enabled: true
           mobile_px: 70
           desktop_px: 60
-      routes:
-      - url: /wetter-und-lueften/heute
-        icon: mdi:weather-sunny-alert
-        label: Heute
-      - url: /wetter-und-lueften/ventilatoren
-        icon: mdi:fan
-        label: Ventilatoren
-      - url: /wetter-und-lueften/hausklima
-        icon: mdi:home-thermometer
-        label: Klima
-      - url: /wetter-und-lueften/keller
-        icon: mdi:home-floor-negative-1
-        label: Keller
-      - url: /wetter-und-lueften/wetterstation
-        icon: mdi:weather-windy
-        label: Wetter
-      - url: /wetter-und-lueften/wartung
-        icon: mdi:tools
-        label: Wartung
+      routes: *id001
 - title: Wetterstation
   path: wetterstation
   icon: mdi:weather-windy
@@ -745,8 +622,8 @@ views:
     cards:
     - type: custom:navbar-card
       desktop:
-        position: top
-        show_labels: true
+        position: bottom
+        show_labels: false
         mode: docked
       mobile:
         show_labels: false
@@ -756,25 +633,7 @@ views:
           enabled: true
           mobile_px: 70
           desktop_px: 60
-      routes:
-      - url: /wetter-und-lueften/heute
-        icon: mdi:weather-sunny-alert
-        label: Heute
-      - url: /wetter-und-lueften/ventilatoren
-        icon: mdi:fan
-        label: Ventilatoren
-      - url: /wetter-und-lueften/hausklima
-        icon: mdi:home-thermometer
-        label: Klima
-      - url: /wetter-und-lueften/keller
-        icon: mdi:home-floor-negative-1
-        label: Keller
-      - url: /wetter-und-lueften/wetterstation
-        icon: mdi:weather-windy
-        label: Wetter
-      - url: /wetter-und-lueften/wartung
-        icon: mdi:tools
-        label: Wartung
+      routes: *id001
 - title: Wartung
   path: wartung
   icon: mdi:tools
@@ -786,29 +645,6 @@ views:
   - entity: sensor.wartung_geraete_offline
     name: Offline
   sections:
-  - type: grid
-    cards:
-    - type: custom:mushroom-template-card
-      primary: Gerätegesundheit
-      secondary: '{% set batt = states(''sensor.wartung_batterie_warnungen'') | int(0) %} {% set offline = states(''sensor.wartung_geraete_offline'') | int(0) %} {% if batt == 0 and offline == 0 %}Alles unauffällig. {% else %} {% if batt > 0 %}{{ batt }} Batterie-Warnung(en). {% endif %} {% if offline > 0 %}{{ offline }} Offline/unknown Gerät(e).{% endif %} {% endif %}'
-      icon: '{% set batt = states(''sensor.wartung_batterie_warnungen'') | int(0) %} {% set offline = states(''sensor.wartung_geraete_offline'') | int(0) %} {% if batt == 0 and offline == 0 %}mdi:heart-pulse {% elif batt > 0 %}mdi:battery-alert {% else %}mdi:access-point-off{% endif %}'
-      color: '{% set batt = states(''sensor.wartung_batterie_warnungen'') | int(0) %} {% set offline = states(''sensor.wartung_geraete_offline'') | int(0) %} {% if batt == 0 and offline == 0 %}green {% elif batt > 0 %}red {% else %}amber{% endif %}'
-      vertical: true
-      multiline_secondary: true
-    - type: custom:mushroom-entity-card
-      entity: sensor.wartung_batterie_warnungen
-      name: Batterie-Warnungen
-      icon_color: red
-    - type: custom:mushroom-entity-card
-      entity: sensor.wartung_geraete_offline
-      name: Offline/unknown
-      icon_color: amber
-    - type: entities
-      title: Wartung Schwellen
-      show_header_toggle: false
-      entities:
-      - entity: input_number.wartung_batterie_warnschwelle
-        name: Batterie Warnschwelle
   - type: grid
     cards:
     - type: heading
@@ -855,8 +691,8 @@ views:
     cards:
     - type: custom:navbar-card
       desktop:
-        position: top
-        show_labels: true
+        position: bottom
+        show_labels: false
         mode: docked
       mobile:
         show_labels: false
@@ -866,22 +702,65 @@ views:
           enabled: true
           mobile_px: 70
           desktop_px: 60
-      routes:
-      - url: /wetter-und-lueften/heute
-        icon: mdi:weather-sunny-alert
-        label: Heute
-      - url: /wetter-und-lueften/ventilatoren
-        icon: mdi:fan
-        label: Ventilatoren
-      - url: /wetter-und-lueften/hausklima
-        icon: mdi:home-thermometer
-        label: Klima
-      - url: /wetter-und-lueften/keller
-        icon: mdi:home-floor-negative-1
-        label: Keller
-      - url: /wetter-und-lueften/wetterstation
-        icon: mdi:weather-windy
-        label: Wetter
-      - url: /wetter-und-lueften/wartung
-        icon: mdi:tools
-        label: Wartung
+      routes: *id001
+- title: Einstellungen
+  path: einstellungen
+  icon: mdi:cog
+  type: sections
+  max_columns: 2
+  badges: []
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Schwellen
+      heading_style: title
+      icon: mdi:tune
+    - type: entities
+      title: Hitzetag
+      show_header_toggle: false
+      entities:
+      - entity: input_number.hitzetag_schwelle_max
+        name: Hitzetag ab
+      - entity: input_number.hitzetag_lueften_morgens_unter
+        name: Morgens lüften unter
+      - entity: input_number.hitzetag_fenster_schliessen_ab
+        name: Fenster schließen ab
+      - entity: input_number.hitzetag_lueften_delta
+        name: Lüften Delta
+    - type: entities
+      title: Ventilatoren
+      show_header_toggle: false
+      entities:
+      - entity: input_number.ventilator_og_min
+        name: Schlafzimmer-Fan ab OG
+      - entity: input_number.ventilator_delta_min
+        name: Fan-Unterstützung ab Delta
+      - entity: input_number.ventilator_eg_min
+        name: Desktop-Fans ab EG
+      - entity: input_number.ventilator_aussen_max
+        name: Nur lüften bis Außen
+    - type: entities
+      title: Wartung
+      show_header_toggle: false
+      entities:
+      - entity: input_number.wartung_batterie_warnschwelle
+        name: Batterie Warnschwelle
+  - type: grid
+    cards:
+    - type: heading
+      heading: Automationen
+      heading_style: title
+      icon: mdi:robot
+    - type: entities
+      title: Hitzetag-Automationen
+      show_header_toggle: false
+      entities:
+      - entity: automation.hitzetag_forecast_helper_aktualisieren
+        name: Forecast Helper
+      - entity: automation.hitzetag_morgens_luften
+        name: Morgens lüften
+      - entity: automation.hitzetag_fenster_schliessen
+        name: Fenster schließen
+      - entity: automation.hitzetag_abends_og_luften
+        name: Abends OG lüften
