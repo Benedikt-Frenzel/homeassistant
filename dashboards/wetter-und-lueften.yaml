@@ -55,44 +55,6 @@ views:
       name: Wetterbericht
       forecast_type: daily
       show_forecast: true
-  - type: grid
-    column_span: 3
-    cards:
-    - type: custom:navbar-card
-      desktop:
-        position: bottom
-        show_labels: false
-        mode: docked
-      mobile:
-        show_labels: false
-        mode: docked
-      layout:
-        auto_padding:
-          enabled: true
-          mobile_px: 70
-          desktop_px: 60
-      routes: &id001
-      - url: /wetter-und-lueften/heute
-        icon: mdi:weather-sunny-alert
-        label: Heute
-      - url: /wetter-und-lueften/ventilatoren
-        icon: mdi:fan
-        label: Ventilatoren
-      - url: /wetter-und-lueften/hausklima
-        icon: mdi:home-thermometer
-        label: Klima
-      - url: /wetter-und-lueften/keller
-        icon: mdi:home-floor-negative-1
-        label: Keller
-      - url: /wetter-und-lueften/wetterstation
-        icon: mdi:weather-windy
-        label: Wetter
-      - url: /wetter-und-lueften/wartung
-        icon: mdi:tools
-        label: Wartung
-      - url: /wetter-und-lueften/einstellungen
-        icon: mdi:cog
-        label: Einstellungen
 - title: Ventilatoren
   path: ventilatoren
   icon: mdi:fan
@@ -275,23 +237,6 @@ views:
       - entity: sensor.haus_eg_aussen_temperatur_delta
         name: EG Δ
         color: blue
-  - type: grid
-    column_span: 3
-    cards:
-    - type: custom:navbar-card
-      desktop:
-        position: bottom
-        show_labels: false
-        mode: docked
-      mobile:
-        show_labels: false
-        mode: docked
-      layout:
-        auto_padding:
-          enabled: true
-          mobile_px: 70
-          desktop_px: 60
-      routes: *id001
 - title: Hausklima
   path: hausklima
   icon: mdi:home-thermometer
@@ -409,23 +354,6 @@ views:
       - entity: sensor.temp_feucht_flur_temperature
         name: Flur
         color: grey
-  - type: grid
-    column_span: 2
-    cards:
-    - type: custom:navbar-card
-      desktop:
-        position: bottom
-        show_labels: false
-        mode: docked
-      mobile:
-        show_labels: false
-        mode: docked
-      layout:
-        auto_padding:
-          enabled: true
-          mobile_px: 70
-          desktop_px: 60
-      routes: *id001
 - title: Keller
   path: keller
   icon: mdi:home-floor-negative-1
@@ -513,23 +441,6 @@ views:
       - entity: sensor.temp_feucht_keller_gross_temperature
         name: Keller groß
         color: amber
-  - type: grid
-    column_span: 2
-    cards:
-    - type: custom:navbar-card
-      desktop:
-        position: bottom
-        show_labels: false
-        mode: docked
-      mobile:
-        show_labels: false
-        mode: docked
-      layout:
-        auto_padding:
-          enabled: true
-          mobile_px: 70
-          desktop_px: 60
-      routes: *id001
 - title: Wetterstation
   path: wetterstation
   icon: mdi:weather-windy
@@ -617,23 +528,6 @@ views:
       - entity: sensor.gw2000a_rain_rate_piezo
         name: Regen
         color: indigo
-  - type: grid
-    column_span: 2
-    cards:
-    - type: custom:navbar-card
-      desktop:
-        position: bottom
-        show_labels: false
-        mode: docked
-      mobile:
-        show_labels: false
-        mode: docked
-      layout:
-        auto_padding:
-          enabled: true
-          mobile_px: 70
-          desktop_px: 60
-      routes: *id001
 - title: Wartung
   path: wartung
   icon: mdi:tools
@@ -686,23 +580,6 @@ views:
         ## Offline / unknown
 
         {{ state_attr(''sensor.wartung_geraete_offline'',''entities'') }}'
-  - type: grid
-    column_span: 2
-    cards:
-    - type: custom:navbar-card
-      desktop:
-        position: bottom
-        show_labels: false
-        mode: docked
-      mobile:
-        show_labels: false
-        mode: docked
-      layout:
-        auto_padding:
-          enabled: true
-          mobile_px: 70
-          desktop_px: 60
-      routes: *id001
 - title: Einstellungen
   path: einstellungen
   icon: mdi:cog
