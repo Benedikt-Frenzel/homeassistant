@@ -1,0 +1,51 @@
+# Home Assistant Package: Ventilatoren
+# Zweck: Schwellen und Schalter für die Ventilatoren-Empfehlung im Dashboard
+#       "Wetter & Lüften". Reine Helper, keine Automation, keine Gerätesteuerung.
+# Voraussetzungen:
+# - packages in configuration.yaml aktiviert
+# - sensor.haus_og_temperatur, sensor.haus_eg_temperatur,
+#   sensor.haus_og_aussen_temperatur_delta, sensor.haus_eg_aussen_temperatur_delta,
+#   sensor.gw2000a_outdoor_temperature, input_boolean.hitzetag_erwartet vorhanden
+# - fan.xiaomi_tower_schlafzimmer, fan.xiaomi_desktop_office,
+#   fan.xiaomi_desktop_kueche, fan.luftfilter_schlafzimmer,
+#   fan.luftfilter_wohnzimmer vorhanden
+
+input_boolean:
+  ventilatoren_empfehlung_aktiv:
+    name: Ventilatoren-Empfehlung aktiv
+    icon: mdi:fan-auto
+    initial: true
+
+input_number:
+  ventilator_og_min:
+    name: Schlafzimmer-Fan ab OG
+    min: 18
+    max: 32
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-high
+    initial: 24
+  ventilator_delta_min:
+    name: Fan-Unterstützung ab Delta
+    min: 0
+    max: 8
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-lines
+    initial: 1.5
+  ventilator_eg_min:
+    name: Desktop-Fans ab EG
+    min: 18
+    max: 32
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-high
+    initial: 24
+  ventilator_aussen_max:
+    name: Nur lüften bis Außen
+    min: 15
+    max: 30
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer
+    initial: 24

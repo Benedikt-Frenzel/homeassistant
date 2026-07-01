@@ -519,3 +519,211 @@ views:
               **Letzter Eingang:** {{ states('input_datetime.argus_last_alert_at') }}
 
               Diese View ist passiv: keine HA-Notification, keine Geräte-/Haussteuerung.
+
+  - title: Ventilatoren
+    path: ventilatoren
+    icon: mdi:fan
+    type: sections
+    max_columns: 3
+    badges: []
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Empfehlung
+            heading_style: title
+            icon: mdi:fan-alert
+          - type: markdown
+            content: >
+              {% set auto = is_state('input_boolean.ventilatoren_empfehlung_aktiv','on') %}
+              {% set hitze = is_state('input_boolean.hitzetag_erwartet','on') %}
+              {% set aussen = states('sensor.gw2000a_outdoor_temperature')|float(none) %}
+              {% set og = states('sensor.haus_og_temperatur')|float(none) %}
+              {% set eg = states('sensor.haus_eg_temperatur')|float(none) %}
+              {% set og_delta = states('sensor.haus_og_aussen_temperatur_delta')|float(none) %}
+              {% set eg_delta = states('sensor.haus_eg_aussen_temperatur_delta')|float(none) %}
+              {% set og_min = states('input_number.ventilator_og_min')|float(24) %}
+              {% set delta_min = states('input_number.ventilator_delta_min')|float(1.5) %}
+              {% set eg_min = states('input_number.ventilator_eg_min')|float(24) %}
+              {% set a_max = states('input_number.ventilator_aussen_max')|float(24) %}
+              {% set a_txt = (aussen|round(1) ~ ' °C') if aussen is not none else 'unbekannt' %}
+              {% set og_txt = (og|round(1) ~ ' °C') if og is not none else 'unbekannt' %}
+              {% set eg_txt = (eg|round(1) ~ ' °C') if eg is not none else 'unbekannt' %}
+              {% set og_d_txt = (og_delta|round(1) ~ ' °C') if og_delta is not none else 'unbekannt' %}
+              {% set eg_d_txt = (eg_delta|round(1) ~ ' °C') if eg_delta is not none else 'unbekannt' %}
+              {% set lueft_ok = aussen is not none and aussen <= a_max %}
+              {% set og_heiss = og is not none and og >= og_min %}
+              {% set eg_heiss = eg is not none and eg >= eg_min %}
+              {% set og_lueft_hilft = lueft_ok and og_heiss and og_delta is not none and og_delta >= delta_min %}
+              {% set eg_lueft_hilft = lueft_ok and eg_heiss and eg_delta is not none and eg_delta >= delta_min %}
+              # 🌀 Lüften + Ventilatoren
+
+              {% if not auto %}
+              **Empfehlung aus.** Schalter einschalten, wenn du Hinweise möchtest.
+              {% elif aussen is none or og is none or eg is none %}
+              **Daten unvollständig.** Außen: {{ a_txt }}, EG: {{ eg_txt }}, OG: {{ og_txt }}. Fans manuell nach Gefühl nutzen.
+              {% elif aussen > a_max %}
+              **Fenster eher zu.** Außen {{ a_txt }} liegt über der Lüftungsgrenze ({{ a_max|round(1) }} °C). Fans/Luftfilter können innen zirkulieren, aber keine warme Außenluft reinholen.
+              {% elif og_lueft_hilft and eg_lueft_hilft %}
+              **Jetzt lüften und Fans unterstützen lassen.** Außen {{ a_txt }}, OG {{ og_txt }} (+{{ og_d_txt }}), EG {{ eg_txt }} (+{{ eg_d_txt }}). Fenster auf, Tower + Desktop-Fans niedrig/mittel laufen lassen.
+              {% elif og_lueft_hilft %}
+              **Schlafzimmer/OG lüften.** Außen {{ a_txt }}, OG {{ og_txt }} (+{{ og_d_txt }}). Tower-Fan kann die kühle Luft verteilen.
+              {% elif eg_lueft_hilft %}
+              **EG lüften.** Außen {{ a_txt }}, EG {{ eg_txt }} (+{{ eg_d_txt }}). Office/Küche-Fans niedrig/mittel unterstützen den Luftwechsel.
+              {% elif hitze %}
+              **Hitzetag, aber wenig Lüftungs-Vorteil.** Außen {{ a_txt }}, EG {{ eg_txt }}, OG {{ og_txt }}. Fensterstatus beobachten, Fans nach Komfort nutzen.
+              {% else %}
+              **Alles entspannt.** Außen {{ a_txt }}, EG {{ eg_txt }}, OG {{ og_txt }}. Keine Aktion nötig.
+              {% endif %}
+
+              **Merker:** Lüften kühlt nur, wenn draußen kühler ist. Fans ersetzen keinen Luftwechsel, helfen aber tagsüber beim Verteilen frischer Luft.
+          - type: tile
+            entity: input_boolean.ventilatoren_empfehlung_aktiv
+            name: Empfehlung an
+            icon: mdi:fan-auto
+            color: teal
+          - type: tile
+            entity: input_boolean.hitzetag_erwartet
+            name: Hitzetag
+            icon: mdi:white-balance-sunny
+            color: amber
+          - type: tile
+            entity: sensor.gw2000a_outdoor_temperature
+            name: Außen
+            icon: mdi:thermometer
+            color: green
+          - type: tile
+            entity: sensor.haus_og_aussen_temperatur_delta
+            name: OG wärmer als außen
+            icon: mdi:thermometer-lines
+            color: orange
+          - type: tile
+            entity: sensor.haus_eg_aussen_temperatur_delta
+            name: EG wärmer als außen
+            icon: mdi:thermometer-lines
+            color: blue
+      - type: grid
+        cards:
+          - type: heading
+            heading: Schlafzimmer / OG
+            heading_style: title
+            icon: mdi:bed
+          - type: tile
+            entity: fan.xiaomi_tower_schlafzimmer
+            name: Tower Schlafzimmer
+            icon: mdi:fan
+            color: blue
+            features:
+              - type: fan-speed
+              - type: fan-preset-modes
+              - type: fan-oscillate
+          - type: tile
+            entity: fan.luftfilter_schlafzimmer
+            name: Luftfilter Schlafzimmer
+            icon: mdi:air-filter
+            color: cyan
+            features:
+              - type: fan-speed
+              - type: fan-preset-modes
+          - type: entities
+            title: Raumwerte
+            show_header_toggle: false
+            entities:
+              - entity: sensor.temp_feucht_schlafzimmer_temperature
+                name: Temperatur
+              - entity: sensor.temp_feucht_schlafzimmer_humidity
+                name: Feuchte
+              - entity: sensor.luftfilter_schlafzimmer_pm25
+                name: PM2.5
+              - entity: binary_sensor.fenster_schlafzimmer_bett_seite_contact
+                name: Fenster Bett-Seite
+              - entity: binary_sensor.fenster_schlafzimmer_tur_seite_contact
+                name: Fenster Tür-Seite
+      - type: grid
+        cards:
+          - type: heading
+            heading: EG / tagsüber
+            heading_style: title
+            icon: mdi:home-floor-0
+          - type: tile
+            entity: fan.xiaomi_desktop_office
+            name: Desktop Office
+            icon: mdi:fan
+            color: orange
+            features:
+              - type: fan-speed
+              - type: fan-preset-modes
+              - type: fan-oscillate
+          - type: tile
+            entity: fan.xiaomi_desktop_kueche
+            name: Desktop Küche
+            icon: mdi:fan
+            color: green
+            features:
+              - type: fan-speed
+              - type: fan-preset-modes
+              - type: fan-oscillate
+          - type: entities
+            title: EG Werte
+            show_header_toggle: false
+            entities:
+              - entity: sensor.haus_eg_temperatur
+                name: EG Durchschnitt
+              - entity: sensor.haus_eg_luftfeuchte
+                name: EG Feuchte
+              - entity: sensor.haus_eg_aussen_temperatur_delta
+                name: EG wärmer als außen
+      - type: grid
+        cards:
+          - type: heading
+            heading: Wohnzimmer / Luftqualität
+            heading_style: title
+            icon: mdi:sofa
+          - type: tile
+            entity: fan.luftfilter_wohnzimmer
+            name: Luftfilter Wohnzimmer
+            icon: mdi:air-filter
+            color: teal
+            features:
+              - type: fan-speed
+              - type: fan-preset-modes
+          - type: entities
+            title: Luftfilter
+            show_header_toggle: false
+            entities:
+              - entity: sensor.luftfilter_wohnzimmer_pm25
+                name: Wohnzimmer PM2.5
+              - entity: sensor.luftfilter_schlafzimmer_pm25
+                name: Schlafzimmer PM2.5
+              - entity: sensor.luftfilter_wohnzimmer_fan_speed
+                name: Wohnzimmer Fan Speed
+              - entity: sensor.luftfilter_schlafzimmer_fan_speed
+                name: Schlafzimmer Fan Speed
+      - type: grid
+        cards:
+          - type: heading
+            heading: Schwellen
+            heading_style: title
+            icon: mdi:tune
+          - type: entities
+            title: Ventilatoren-Empfehlung
+            show_header_toggle: false
+            entities:
+              - entity: input_number.ventilator_og_min
+                name: Schlafzimmer-Fan ab OG
+              - entity: input_number.ventilator_delta_min
+                name: Fan-Unterstützung ab Delta
+              - entity: input_number.ventilator_eg_min
+                name: Desktop-Fans ab EG
+              - entity: input_number.ventilator_aussen_max
+                name: Nur lüften bis Außen
+          - type: history-graph
+            title: 24h EG/OG/Außen
+            hours_to_show: 24
+            entities:
+              - entity: sensor.gw2000a_outdoor_temperature
+                name: Außen
+              - entity: sensor.haus_eg_temperatur
+                name: EG
+              - entity: sensor.haus_og_temperatur
+                name: OG

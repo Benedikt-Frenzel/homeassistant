@@ -28,6 +28,7 @@ homeassistant:
 - `packages/wartung.yaml`
 - `packages/buero_benedikt_licht.yaml`
 - `packages/argus_monitoring.yaml`
+- `packages/ventilatoren.yaml`
 
 ## Root config files
 

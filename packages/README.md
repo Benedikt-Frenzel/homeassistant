@@ -51,3 +51,7 @@ Danach in Home Assistant:
   - Tokens via `!secret` aus `secrets.yaml`, Quelle: `pass system/infra/xiaomi-tokens`
   - passive Entities, keine Automatik, keine Notifications
   - Voraussetzung: Custom Component unter `/config/custom_components/xiaomi_miio_fan/` installiert
+- `ventilatoren.yaml`
+  - Helper für Ventilatoren-Empfehlungen im Dashboard `Wetter & Lüften`
+  - Schwellen für OG/EG-Temperatur, Innen/Außen-Delta und maximale Außen-Lüftungstemperatur
+  - reiner Empfehlungs-/Dashboard-Support, keine Automation und keine Gerätesteuerung
