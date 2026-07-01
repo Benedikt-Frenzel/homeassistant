@@ -34,6 +34,8 @@
 | T4 | x | `packages/argus_monitoring.yaml` mit passivem Alertmanager-Webhook und Helper-Sensoren anlegen | V6,V7,I1 |
 | T5 | x | Argus-View im Dashboard ergänzen | V5,V6,I2 |
 | T6 | x | README/Secrets-Hinweis für Argus-Webhook ergänzen | V7 |
+| T7 | o | `packages/xiaomi_fans.yaml` mit drei Xiaomi-Fans (p45 + 2x p70) anlegen, Tokens in `secrets.yaml` | V7,I1 |
+| T8 | o | `packages/README.md` um Xiaomi-Fans-Package ergänzen | I1 |
 
 §B
 | id | date | cause | fix |

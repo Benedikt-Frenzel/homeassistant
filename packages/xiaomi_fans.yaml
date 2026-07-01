@@ -1,0 +1,26 @@
+# Home Assistant Package: Xiaomi Fans
+# Zweck: Drei Xiaomi-Ventilatoren ueber die Custom-Component syssi/xiaomi_fan einbinden.
+# Quelle: https://github.com/syssi/xiaomi_fan
+# Voraussetzungen:
+# - Custom Component unter /config/custom_components/xiaomi_miio_fan/ installiert
+# - Tokens in secrets.yaml (Quelle: pass system/infra/xiaomi-tokens)
+# Risiko: niedrig, neue passive Entities. Keine Automatik, keine Notifications.
+
+fan:
+  - platform: xiaomi_miio_fan
+    name: Xiaomi Tower Schlafzimmer
+    host: 10.12.99.25
+    token: !secret xiaomi_fan_tower_2_token
+    model: xiaomi.fan.p45
+
+  - platform: xiaomi_miio_fan
+    name: Xiaomi Desktop Office
+    host: 10.12.99.176
+    token: !secret xiaomi_fan_desktop_office_token
+    model: xiaomi.fan.p70
+
+  - platform: xiaomi_miio_fan
+    name: Xiaomi Desktop Kueche
+    host: 10.12.99.129
+    token: !secret xiaomi_fan_desktop_kueche_token
+    model: xiaomi.fan.p70

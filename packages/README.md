@@ -44,3 +44,10 @@ Danach in Home Assistant:
   - passive Offline/unknown-Geräteübersicht
   - passive Luftqualitäts- und Feuchtebewertung
   - keine Notifications, keine Geräte-Automatik
+- `xiaomi_fans.yaml`
+  - Custom Component `syssi/xiaomi_fan` (https://github.com/syssi/xiaomi_fan)
+  - Xiaomi Smart Tower Fan 2 (xiaomi.fan.p45) im Schlafzimmer
+  - 2x Xiaomi Smart Desktop Air Circulation Fan (xiaomi.fan.p70), Office + Küche
+  - Tokens via `!secret` aus `secrets.yaml`, Quelle: `pass system/infra/xiaomi-tokens`
+  - passive Entities, keine Automatik, keine Notifications
+  - Voraussetzung: Custom Component unter `/config/custom_components/xiaomi_miio_fan/` installiert
