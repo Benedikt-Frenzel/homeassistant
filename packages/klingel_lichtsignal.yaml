@@ -1,0 +1,65 @@
+# Home Assistant Package: Klingel-Lichtsignal
+# Zweck: Bei einem Klingeln an Haustür oder Tor blinken die Esszimmerleuchte
+#        und das Leselicht im Wohnzimmer dreimal.
+# Trigger: Die UniFi-Protect-Visitor-Entity von Haustür oder Tor wechselt auf "on".
+# Bedingungen: keine.
+# Aktionen: Lichtzustände sichern, beide Lampen dreimal ein-/ausschalten und
+#           anschließend Helligkeit, Farbe und Ein-/Aus-Zustand wiederherstellen.
+# Risiko: niedrig. Während des Signals werden die Lampen für ca. 2,1 Sekunden
+#         gesteuert. Bei einem HA-Neustart währenddessen kann die Wiederherstellung
+#         ausbleiben.
+# Test: Automation in HA manuell ausführen und danach einen Klingeltaster prüfen.
+# Rollback: Automation deaktivieren oder dieses Package entfernen.
+# Voraussetzungen:
+# - binary_sensor.haustuer_visitor
+# - binary_sensor.tor_visitor
+# - light.esszimmer_licht_arbeitsleuchte_esszimmer
+# - light.licht_wohnzimmer_lesen
+
+automation:
+  - id: klingel_lichtsignal_esszimmer_wohnzimmer
+    alias: "Klingel: Lichtsignal im Ess- und Wohnzimmer"
+    description: >
+      Lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte und das
+      Leselicht im Wohnzimmer dreimal blinken und stellt ihren vorherigen Zustand
+      anschließend wieder her.
+    mode: single
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.haustuer_visitor
+          - binary_sensor.tor_visitor
+        from: "off"
+        to: "on"
+    action:
+      - service: scene.create
+        data:
+          scene_id: vor_klingel_lichtsignal
+          snapshot_entities:
+            - light.esszimmer_licht_arbeitsleuchte_esszimmer
+            - light.licht_wohnzimmer_lesen
+      - repeat:
+          count: 3
+          sequence:
+            - service: light.turn_on
+              target:
+                entity_id:
+                  - light.esszimmer_licht_arbeitsleuchte_esszimmer
+                  - light.licht_wohnzimmer_lesen
+              data:
+                brightness_pct: 100
+                transition: 0
+            - delay:
+                milliseconds: 350
+            - service: light.turn_off
+              target:
+                entity_id:
+                  - light.esszimmer_licht_arbeitsleuchte_esszimmer
+                  - light.licht_wohnzimmer_lesen
+              data:
+                transition: 0
+            - delay:
+                milliseconds: 350
+      - service: scene.turn_on
+        target:
+          entity_id: scene.vor_klingel_lichtsignal
