@@ -1,6 +1,6 @@
 # Home Assistant Package: Klingel-Lichtsignal
-# Zweck: Bei einem Klingeln an Haustür oder Tor blinken die Esszimmerleuchte
-#        und das Leselicht im Wohnzimmer dreimal.
+# Zweck: Bei einem Klingeln an Haustür oder Tor blinken die Esszimmerleuchte,
+#        das Leselicht im Wohnzimmer und das Deckenlicht im Büro Benedikt dreimal.
 # Trigger: Die UniFi-Protect-Visitor-Entity von Haustür oder Tor wechselt auf "on".
 # Bedingungen: keine.
 # Aktionen: Lichtzustände sichern, beide Lampen dreimal ein-/ausschalten und
@@ -15,14 +15,15 @@
 # - binary_sensor.tor_visitor
 # - light.esszimmer_licht_arbeitsleuchte_esszimmer
 # - light.licht_wohnzimmer_lesen
+# - light.licht_buro_benedikt_decke
 
 automation:
   - id: klingel_lichtsignal_esszimmer_wohnzimmer
-    alias: "Klingel: Lichtsignal im Ess- und Wohnzimmer"
+    alias: "Klingel: Lichtsignal in Esszimmer, Wohnzimmer und Büro"
     description: >
-      Lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte und das
-      Leselicht im Wohnzimmer dreimal blinken und stellt ihren vorherigen Zustand
-      anschließend wieder her.
+      Lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte, das
+      Leselicht im Wohnzimmer und das Deckenlicht im Büro Benedikt dreimal blinken
+      und stellt ihren vorherigen Zustand anschließend wieder her.
     mode: single
     trigger:
       - platform: state
@@ -38,6 +39,7 @@ automation:
           snapshot_entities:
             - light.esszimmer_licht_arbeitsleuchte_esszimmer
             - light.licht_wohnzimmer_lesen
+            - light.licht_buro_benedikt_decke
       - repeat:
           count: 3
           sequence:
@@ -46,6 +48,7 @@ automation:
                 entity_id:
                   - light.esszimmer_licht_arbeitsleuchte_esszimmer
                   - light.licht_wohnzimmer_lesen
+                  - light.licht_buro_benedikt_decke
               data:
                 brightness_pct: 100
                 transition: 0
@@ -56,6 +59,7 @@ automation:
                 entity_id:
                   - light.esszimmer_licht_arbeitsleuchte_esszimmer
                   - light.licht_wohnzimmer_lesen
+                  - light.licht_buro_benedikt_decke
               data:
                 transition: 0
             - delay:

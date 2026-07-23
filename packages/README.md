@@ -31,7 +31,7 @@ Danach in Home Assistant:
   - Fenster-Schließen Notification
   - Abend-OG-Lüften Notification
 - `klingel_lichtsignal.yaml`
-  - lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte und das Leselicht im Wohnzimmer dreimal blinken
+  - lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte, das Leselicht im Wohnzimmer und das Deckenlicht im Büro Benedikt dreimal blinken
   - sichert den vorherigen Lichtzustand und stellt ihn anschließend wieder her
 - `luftentfeuchter.yaml`
   - Tuya-Luftentfeuchter Tank-voll-Erkennung über Leistungsabfall
