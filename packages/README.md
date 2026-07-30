@@ -30,6 +30,10 @@ Danach in Home Assistant:
   - Morgen-Lüften Notification
   - Fenster-Schließen Notification
   - Abend-OG-Lüften Notification
+- `kobra_s1_3d_drucker.yaml`
+  - verfolgt laufende Drucke über die Moonraker-Entities des Anycubic Kobra S1
+  - merkt den Dateinamen und sendet nach erfolgreichem Abschluss eine Push-Nachricht
+  - schaltet weder Drucker noch Steckdose automatisch
 - `klingel_lichtsignal.yaml`
   - lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte, das Leselicht im Wohnzimmer und das Deckenlicht im Büro Benedikt dreimal blinken
   - sichert den vorherigen Lichtzustand und stellt ihn anschließend wieder her

@@ -1,0 +1,234 @@
+title: 3D-Drucker
+views:
+  - title: Kobra S1
+    path: kobra-s1
+    icon: mdi:printer-3d
+    type: sections
+    max_columns: 3
+    badges:
+      - entity: sensor.kobra_s1_current_print_state
+        name: Druckstatus
+      - entity: sensor.kobra_s1_progress
+        name: Fortschritt
+      - entity: sensor.3d_printer_power
+        name: Leistung
+      - entity: switch.3d_printer
+        name: Steckdose
+    sections:
+      - type: grid
+        column_span: 2
+        cards:
+          - type: custom:mushroom-template-card
+            entity: sensor.kobra_s1_current_print_state
+            primary: >-
+              {% set status = states('sensor.kobra_s1_current_print_state') %}
+              {% set namen = {
+                'printing': 'Druck läuft',
+                'paused': 'Druck pausiert',
+                'complete': 'Druck fertig',
+                'cancelled': 'Druck abgebrochen',
+                'error': 'Druckfehler',
+                'standby': 'Bereit'
+              } %}
+              {{ namen.get(status, 'Drucker ' ~ status) }}
+            secondary: >-
+              {% set status = states('sensor.kobra_s1_current_print_state') %}
+              {% if status == 'printing' %}
+                {{ states('sensor.kobra_s1_filename') }} ·
+                {{ states('sensor.kobra_s1_progress') | float(0) | round(0) }} % ·
+                fertig {{ as_timestamp(states('sensor.kobra_s1_print_eta'), none) | timestamp_custom('%H:%M Uhr', true, '–') }}
+              {% elif status == 'complete' %}
+                Der letzte Druck wurde erfolgreich abgeschlossen.
+              {% elif status in ['unavailable', 'unknown'] %}
+                Moonraker ist nicht erreichbar.
+              {% else %}
+                {{ states('sensor.kobra_s1_printer_message') }}
+              {% endif %}
+            icon: >-
+              {% set status = states('sensor.kobra_s1_current_print_state') %}
+              {% if status == 'printing' %}mdi:printer-3d-nozzle
+              {% elif status == 'complete' %}mdi:check-circle
+              {% elif status in ['error', 'cancelled'] %}mdi:alert-circle
+              {% elif status == 'paused' %}mdi:pause-circle
+              {% else %}mdi:printer-3d{% endif %}
+            color: >-
+              {% set status = states('sensor.kobra_s1_current_print_state') %}
+              {% if status == 'printing' %}blue
+              {% elif status == 'complete' %}green
+              {% elif status in ['error', 'cancelled'] %}red
+              {% elif status == 'paused' %}amber
+              {% else %}grey{% endif %}
+            multiline_secondary: true
+            tap_action:
+              action: url
+              url_path: http://10.12.99.200
+          - type: gauge
+            entity: sensor.kobra_s1_progress
+            name: Druckfortschritt
+            min: 0
+            max: 100
+            needle: true
+            severity:
+              green: 95
+              yellow: 50
+              red: 0
+          - type: tile
+            entity: sensor.kobra_s1_filename
+            name: Datei
+            vertical: false
+          - type: tile
+            entity: sensor.kobra_s1_print_eta
+            name: Fertig um
+            vertical: false
+          - type: tile
+            entity: sensor.kobra_s1_print_duration
+            name: Druckdauer
+            vertical: false
+          - type: tile
+            entity: sensor.kobra_s1_print_time_left
+            name: Restzeit
+            vertical: false
+          - type: tile
+            entity: sensor.kobra_s1_current_layer
+            name: Aktuelle Schicht
+            vertical: false
+          - type: tile
+            entity: sensor.kobra_s1_total_layer
+            name: Schichten gesamt
+            vertical: false
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Drucker-Steckdose
+            heading_style: title
+            icon: mdi:power-socket-de
+          - type: custom:mushroom-template-card
+            entity: switch.3d_printer
+            primary: >-
+              Steckdose {% if is_state('switch.3d_printer', 'on') %}eingeschaltet{% else %}ausgeschaltet{% endif %}
+            secondary: >-
+              {% if is_state('sensor.kobra_s1_current_print_state', 'printing') %}
+                Nicht ausschalten – ein Druck läuft!
+              {% else %}
+                Zum Umschalten tippen; Sicherheitsabfrage beachten.
+              {% endif %}
+            icon: mdi:power-socket-de
+            color: >-
+              {% if is_state('sensor.kobra_s1_current_print_state', 'printing') %}red
+              {% elif is_state('switch.3d_printer', 'on') %}green
+              {% else %}grey{% endif %}
+            multiline_secondary: true
+            tap_action:
+              action: toggle
+              confirmation:
+                text: Drucker-Steckdose wirklich umschalten?
+          - type: tile
+            entity: sensor.3d_printer_power
+            name: Aktuelle Leistung
+          - type: tile
+            entity: sensor.3d_printer_energy
+            name: Energie gesamt
+          - type: tile
+            entity: sensor.3d_printer_current
+            name: Strom
+          - type: tile
+            entity: sensor.3d_printer_voltage
+            name: Spannung
+
+      - type: grid
+        column_span: 2
+        cards:
+          - type: heading
+            heading: Kamera
+            heading_style: title
+            icon: mdi:webcam
+          - type: picture-entity
+            entity: camera.kobra_s1_webcam
+            name: Kobra S1 Livebild
+            camera_view: live
+            show_name: true
+            show_state: false
+            aspect_ratio: 4x3
+          - type: picture-entity
+            entity: camera.kobra_s1_thumbnail
+            name: Druckvorschau
+            camera_view: auto
+            show_name: true
+            show_state: false
+            aspect_ratio: 4x3
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Temperaturen
+            heading_style: title
+            icon: mdi:thermometer
+          - type: tile
+            entity: sensor.kobra_s1_extruder_temperature
+            name: Düse aktuell
+          - type: tile
+            entity: number.kobra_s1_extruder_target
+            name: Düse Ziel
+            features_position: bottom
+          - type: tile
+            entity: sensor.kobra_s1_bed_temperature
+            name: Druckbett aktuell
+          - type: tile
+            entity: number.kobra_s1_bed_target
+            name: Druckbett Ziel
+            features_position: bottom
+
+      - type: grid
+        column_span: 2
+        cards:
+          - type: heading
+            heading: Verlauf
+            heading_style: title
+            icon: mdi:chart-line
+          - type: custom:mini-graph-card
+            name: Temperaturen – letzte 2 Stunden
+            hours_to_show: 2
+            points_per_hour: 30
+            line_width: 2
+            show:
+              points: false
+              legend: true
+            entities:
+              - entity: sensor.kobra_s1_extruder_temperature
+                name: Düse
+                color: orange
+              - entity: sensor.kobra_s1_bed_temperature
+                name: Druckbett
+                color: blue
+          - type: custom:mini-graph-card
+            name: Leistung – letzte 2 Stunden
+            hours_to_show: 2
+            points_per_hour: 12
+            line_width: 2
+            show:
+              points: false
+              legend: false
+            entities:
+              - entity: sensor.3d_printer_power
+                name: Steckdose
+                color: green
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Drucker
+            heading_style: title
+            icon: mdi:printer-3d
+          - type: tile
+            entity: sensor.kobra_s1_printer_state
+            name: Moonraker-Verbindung
+          - type: tile
+            entity: sensor.kobra_s1_filament_used
+            name: Filament verwendet
+          - type: tile
+            entity: sensor.kobra_s1_print_speed
+            name: Druckgeschwindigkeit
+          - type: tile
+            entity: sensor.kobra_s1_idle_timeout_state
+            name: Betriebszustand

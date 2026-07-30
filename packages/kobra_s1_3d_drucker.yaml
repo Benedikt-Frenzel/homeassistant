@@ -1,0 +1,113 @@
+# Home Assistant Package: Anycubic Kobra S1
+# Zweck: Den Druckstatus verfolgen und nach erfolgreichem Druckabschluss
+#        eine Push-Benachrichtigung senden.
+# Trigger:
+# - Moonraker-Druckstatus wechselt zu "printing", "complete", "cancelled" oder "error"
+# - Home Assistant startet während eines laufenden Drucks
+# - Die Drucker-Steckdose wird ausgeschaltet
+# Aktionen:
+# - merkt sich laufenden Druck und Dateinamen
+# - sendet bei "complete" eine Nachricht an das Mobilgerät SM-A556B
+# - setzt den Merker nach Abschluss, Abbruch, Fehler oder Ausschalten zurück
+# Betroffene Entities:
+# - sensor.kobra_s1_current_print_state
+# - sensor.kobra_s1_filename
+# - switch.3d_printer (nur lesend als Reset-Trigger; wird niemals geschaltet)
+# - notify.mobile_app_sm_a556b
+# Sicherheitsrisiko: niedrig. Keine Drucker- oder Steckdosensteuerung.
+# Test: Automation in HA kontrollieren; Benachrichtigung erst beim nächsten
+#       echten Zustandswechsel von einem gemerkten Druck zu "complete" erwarten.
+# Rollback: Package entfernen und Home Assistant neu starten.
+
+input_boolean:
+  kobra_s1_druck_laeuft:
+    name: Kobra S1 Druck läuft
+    icon: mdi:printer-3d-nozzle
+
+input_text:
+  kobra_s1_letzter_dateiname:
+    name: Kobra S1 letzter Dateiname
+    icon: mdi:file-document-outline
+    max: 255
+
+automation:
+  - id: kobra_s1_druckstatus_verfolgen
+    alias: "Kobra S1: Druckstatus verfolgen"
+    description: >
+      Merkt laufende Drucke, benachrichtigt bei erfolgreichem Abschluss und
+      setzt den Merker bei Abbruch, Fehler oder ausgeschalteter Steckdose zurück.
+    mode: queued
+    max: 5
+    trigger:
+      - platform: homeassistant
+        event: start
+        id: ha_start
+      - platform: state
+        entity_id: sensor.kobra_s1_current_print_state
+        to: "printing"
+        id: gestartet
+      - platform: state
+        entity_id: sensor.kobra_s1_current_print_state
+        to: "complete"
+        id: fertig
+      - platform: state
+        entity_id: sensor.kobra_s1_current_print_state
+        to: "cancelled"
+        id: abgebrochen
+      - platform: state
+        entity_id: sensor.kobra_s1_current_print_state
+        to: "error"
+        id: fehler
+      - platform: state
+        entity_id: switch.3d_printer
+        to: "off"
+        id: ausgeschaltet
+    action:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ trigger.id == 'gestartet' or
+                     (trigger.id == 'ha_start' and
+                      is_state('sensor.kobra_s1_current_print_state', 'printing')) }}
+            sequence:
+              - service: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.kobra_s1_druck_laeuft
+              - service: input_text.set_value
+                target:
+                  entity_id: input_text.kobra_s1_letzter_dateiname
+                data:
+                  value: >
+                    {{ states('sensor.kobra_s1_filename')
+                       if states('sensor.kobra_s1_filename') not in
+                          ['unknown', 'unavailable', '']
+                       else 'Unbekannte Druckdatei' }}
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.id == 'fertig' }}"
+              - condition: state
+                entity_id: input_boolean.kobra_s1_druck_laeuft
+                state: "on"
+            sequence:
+              - service: notify.mobile_app_sm_a556b
+                data:
+                  title: "🖨️ Kobra S1: Druck fertig"
+                  message: >
+                    Der Druck „{{ states('input_text.kobra_s1_letzter_dateiname') }}“
+                    wurde erfolgreich abgeschlossen.
+                  data:
+                    tag: kobra_s1_druck_fertig
+                    ttl: 0
+                    priority: high
+              - service: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.kobra_s1_druck_laeuft
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ trigger.id in ['abgebrochen', 'fehler', 'ausgeschaltet'] }}
+            sequence:
+              - service: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.kobra_s1_druck_laeuft
