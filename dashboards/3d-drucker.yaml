@@ -150,13 +150,6 @@ views:
             show_name: true
             show_state: false
             aspect_ratio: 4x3
-          - type: picture-entity
-            entity: camera.kobra_s1_thumbnail
-            name: Druckvorschau
-            camera_view: auto
-            show_name: true
-            show_state: false
-            aspect_ratio: 4x3
 
       - type: grid
         cards:
