@@ -1,0 +1,73 @@
+# Home Assistant Package: Schlafzimmer-Wecklicht
+# Zweck: Morgens um 06:30 alle Schlafzimmer-Lampen sanft von 1 % auf 100 % hochfahren
+#        (Ankunft ca. 07:35). Sanftes Aufwachen statt Schreck.
+# Risiko: niedrig — nur Lichtquellen werden gedimmt.
+# Deaktivieren: input_boolean.schlafzimmer_wecklicht_aktiv ausschalten
+#   oder die Automation "Schlafzimmer Wecklicht morgens" deaktivieren.
+# Hinweis: Die Nachttischlampen (Benedikt, Victoria) sind z. Zt. "unavailable"
+#   und werden in der Gruppe ignoriert, bis sie wieder erreichbar sind.
+
+light:
+  - platform: group
+    name: Schlafzimmer Lampen
+    unique_id: schlafzimmer_lampen
+    entities:
+      - light.schlafzimmer_licht_schlafzimmer_bett
+      - light.schlafzimmer_licht_benedikts_nachttisch
+      - light.schlafzimmer_nachtisch_hase
+      - light.licht_schlafzimmer_schrank
+
+input_boolean:
+  schlafzimmer_wecklicht_aktiv:
+    name: Schlafzimmer Wecklicht aktiv
+    icon: mdi:weather-sunset-up
+    initial: on
+
+script:
+  schlafzimmer_wecklicht_starten:
+    alias: "Schlafzimmer Wecklicht starten"
+    description: >
+      Fährt alle Schlafzimmer-Lampen über ca. 60 Minuten von 1 % auf 100 %.
+    mode: single
+    icon: mdi:weather-sunset-up
+    sequence:
+      # Sehr dunkler Start, damit das Licht nicht schlagartig aufwacht.
+      - service: light.turn_on
+        target:
+          entity_id: light.schlafzimmer_lampen
+        data:
+          brightness_pct: 1
+          transition: 30
+      # 12 Schritte à 5 Minuten: 8 %, 17 %, 25 %, ... bis 100 %.
+      # Jede Stufe blendet über 5 Minuten weich zur nächsten über.
+      - repeat:
+          count: 12
+          sequence:
+            - delay:
+                minutes: 5
+            - service: light.turn_on
+              target:
+                entity_id: light.schlafzimmer_lampen
+              data:
+                brightness_pct: "{{ (repeat.index * 100 / 12) | round(0) }}"
+                transition: 300
+
+automation:
+  - id: schlafzimmer_wecklicht_morgens
+    alias: "Schlafzimmer Wecklicht morgens"
+    description: >
+      Startet um 06:30 das sanfte Hochfahren der Schlafzimmer-Beleuchtung,
+      wenn das Wecklicht aktiviert ist und die Lampen noch aus sind.
+    mode: single
+    trigger:
+      - platform: time
+        at: "06:30:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.schlafzimmer_wecklicht_aktiv
+        state: "on"
+      - condition: state
+        entity_id: light.schlafzimmer_lampen
+        state: "off"
+    action:
+      - service: script.schlafzimmer_wecklicht_starten

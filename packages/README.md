@@ -35,8 +35,13 @@ Danach in Home Assistant:
   - merkt den Dateinamen und sendet nach erfolgreichem Abschluss eine Push-Nachricht
   - schaltet weder Drucker noch Steckdose automatisch
 - `klingel_lichtsignal.yaml`
-  - lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte, das Leselicht im Wohnzimmer und das Deckenlicht im Büro Benedikt dreimal blinken
+  - lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte, das Leselicht im Wohnzimmer, das Deckenlicht im Büro Benedikt und das Licht im Chill-out-Bereich dreimal blinken
   - sichert den vorherigen Lichtzustand und stellt ihn anschließend wieder her
+- `schlafzimmer_wecklicht.yaml`
+  - fährt morgens um 06:30 alle Schlafzimmer-Lampen als Gruppe `light.schlafzimmer_lampen` sanft von 1 % auf 100 % hoch (Ankunft ca. 07:35)
+  - Master-Schalter `input_boolean.schlafzimmer_wecklicht_aktiv` zum schnellen Deaktivieren
+  - nur Lichtsteuerung, keine anderen Geräte
+  - die Nachttischlampen (Benedikt, Victoria) sind z. Zt. `unavailable` und werden in der Gruppe ignoriert
 - `luftentfeuchter.yaml`
   - Tuya-Luftentfeuchter Tank-voll-Erkennung über Leistungsabfall
   - berücksichtigt Keller-Luftfeuchte, damit Zielwert/Standby keine falsche Warnung auslöst

@@ -1,9 +1,10 @@
 # Home Assistant Package: Klingel-Lichtsignal
 # Zweck: Bei einem Klingeln an Haustür oder Tor blinken die Esszimmerleuchte,
-#        das Leselicht im Wohnzimmer und das Deckenlicht im Büro Benedikt dreimal.
+#        das Leselicht im Wohnzimmer, das Deckenlicht im Büro Benedikt und das
+#        Licht im Chill-out-Bereich dreimal.
 # Trigger: Die UniFi-Protect-Visitor-Entity von Haustür oder Tor wechselt auf "on".
 # Bedingungen: keine.
-# Aktionen: Lichtzustände sichern, beide Lampen dreimal ein-/ausschalten und
+# Aktionen: Lichtzustände sichern, alle Leuchten dreimal ein-/ausschalten und
 #           anschließend Helligkeit, Farbe und Ein-/Aus-Zustand wiederherstellen.
 # Risiko: niedrig. Während des Signals werden die Lampen für ca. 2,1 Sekunden
 #         gesteuert. Bei einem HA-Neustart währenddessen kann die Wiederherstellung
@@ -16,14 +17,16 @@
 # - light.esszimmer_licht_arbeitsleuchte_esszimmer
 # - light.licht_wohnzimmer_lesen
 # - light.licht_buro_benedikt_decke
+# - light.licht_chillout
 
 automation:
   - id: klingel_lichtsignal_esszimmer_wohnzimmer
-    alias: "Klingel: Lichtsignal in Esszimmer, Wohnzimmer und Büro"
+    alias: "Klingel: Lichtsignal in Esszimmer, Wohnzimmer, Büro und Chill-out-Bereich"
     description: >
       Lässt bei einem Klingeln an Haustür oder Tor die Esszimmerleuchte, das
-      Leselicht im Wohnzimmer und das Deckenlicht im Büro Benedikt dreimal blinken
-      und stellt ihren vorherigen Zustand anschließend wieder her.
+      Leselicht im Wohnzimmer, das Deckenlicht im Büro Benedikt und das Licht im
+      Chill-out-Bereich dreimal blinken und stellt ihren vorherigen Zustand
+      anschließend wieder her.
     mode: single
     trigger:
       - platform: state
@@ -40,6 +43,7 @@ automation:
             - light.esszimmer_licht_arbeitsleuchte_esszimmer
             - light.licht_wohnzimmer_lesen
             - light.licht_buro_benedikt_decke
+            - light.licht_chillout
       - repeat:
           count: 3
           sequence:
@@ -49,6 +53,7 @@ automation:
                   - light.esszimmer_licht_arbeitsleuchte_esszimmer
                   - light.licht_wohnzimmer_lesen
                   - light.licht_buro_benedikt_decke
+                  - light.licht_chillout
               data:
                 brightness_pct: 100
                 transition: 0
@@ -60,6 +65,7 @@ automation:
                   - light.esszimmer_licht_arbeitsleuchte_esszimmer
                   - light.licht_wohnzimmer_lesen
                   - light.licht_buro_benedikt_decke
+                  - light.licht_chillout
               data:
                 transition: 0
             - delay:
