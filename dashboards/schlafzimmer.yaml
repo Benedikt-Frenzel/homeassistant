@@ -1,0 +1,74 @@
+title: Schlafzimmer
+views:
+  - title: Wecklicht
+    path: wecklicht
+    icon: mdi:weather-sunset-up
+    type: sections
+    max_columns: 2
+    badges:
+      - entity: input_boolean.schlafzimmer_wecklicht_aktiv
+        name: Wecklicht
+      - entity: input_datetime.schlafzimmer_weckzeit
+        name: Weckzeit
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Wecklicht
+            heading_style: title
+            icon: mdi:weather-sunset-up
+          - type: entities
+            title: Einstellungen
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.schlafzimmer_wecklicht_aktiv
+                name: Wecklicht aktiv
+              - entity: input_datetime.schlafzimmer_weckzeit
+                name: Weckzeit
+              - entity: light.schlafzimmer_lampen
+                name: Schlafzimmer Lampen
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% if is_state('input_boolean.schlafzimmer_wecklicht_aktiv', 'on') %}
+                Wecklicht morgen aktiv
+              {% else %}
+                Wecklicht deaktiviert
+              {% endif %}
+            secondary: >-
+              {% if is_state('input_boolean.schlafzimmer_wecklicht_aktiv', 'on') %}
+                Sanftes Hochfahren ab {{ states('input_datetime.schlafzimmer_weckzeit') }} Uhr,
+                100 % nach ca. 65 Minuten.
+              {% else %}
+                Zum Aktivieren den Schalter "Wecklicht aktiv" umlegen.
+              {% endif %}
+            icon: >-
+              {% if is_state('input_boolean.schlafzimmer_wecklicht_aktiv', 'on') %}
+                mdi:weather-sunset-up
+              {% else %}
+                mdi:weather-sunset-down
+              {% endif %}
+            color: >-
+              {% if is_state('input_boolean.schlafzimmer_wecklicht_aktiv', 'on') %}
+                amber
+              {% else %}
+                grey
+              {% endif %}
+            multiline_secondary: true
+      - type: grid
+        cards:
+          - type: heading
+            heading: Status
+            heading_style: title
+            icon: mdi:clock-outline
+          - type: custom:mushroom-entity-card
+            entity: automation.schlafzimmer_wecklicht_morgens
+            name: Automation
+            icon_color: blue
+          - type: markdown
+            content: >
+              **Zuletzt ausgelöst:**
+              {{ state_attr('automation.schlafzimmer_wecklicht_morgens', 'last_triggered')
+                 | default('nie', true) }}
+
+              Diese View steuert nur das Wecklicht (Lichtgruppe Schlafzimmer).
+              Keine anderen Geräte.

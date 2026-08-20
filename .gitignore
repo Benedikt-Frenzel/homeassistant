@@ -5,6 +5,7 @@
 AGENT.md
 docs/
 drafts/
+.pi/
 
 # Home Assistant local/runtime files
 .storage/

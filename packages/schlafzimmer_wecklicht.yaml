@@ -1,6 +1,8 @@
 # Home Assistant Package: Schlafzimmer-Wecklicht
-# Zweck: Morgens um 06:30 alle Schlafzimmer-Lampen sanft von 1 % auf 100 % hochfahren
-#        (Ankunft ca. 07:35). Sanftes Aufwachen statt Schreck.
+# Zweck: Morgens um die einstellbare Weckzeit alle Schlafzimmer-Lampen sanft von 1 % auf 100 %
+#        hochfahren (Ankunft ca. 65 Min. nach Weckzeit). Sanftes Aufwachen statt Schreck.
+# Weckzeit ändern: input_datetime.schlafzimmer_weckzeit (Standard 06:30), z. B. per Dashboard-Karte
+#        oder Einstellungen → Geräte & Dienste → Helfer.
 # Risiko: niedrig — nur Lichtquellen werden gedimmt.
 # Deaktivieren: input_boolean.schlafzimmer_wecklicht_aktiv ausschalten
 #   oder die Automation "Schlafzimmer Wecklicht morgens" deaktivieren.
@@ -22,6 +24,14 @@ input_boolean:
     name: Schlafzimmer Wecklicht aktiv
     icon: mdi:weather-sunset-up
     initial: on
+
+input_datetime:
+  schlafzimmer_weckzeit:
+    name: Schlafzimmer Weckzeit
+    has_date: false
+    has_time: true
+    initial: "06:30:00"
+    icon: mdi:alarm
 
 script:
   schlafzimmer_wecklicht_starten:
@@ -56,12 +66,13 @@ automation:
   - id: schlafzimmer_wecklicht_morgens
     alias: "Schlafzimmer Wecklicht morgens"
     description: >
-      Startet um 06:30 das sanfte Hochfahren der Schlafzimmer-Beleuchtung,
+      Startet zur einstellbaren Weckzeit (input_datetime.schlafzimmer_weckzeit,
+      Standard 06:30) das sanfte Hochfahren der Schlafzimmer-Beleuchtung,
       wenn das Wecklicht aktiviert ist und die Lampen noch aus sind.
     mode: single
     trigger:
       - platform: time
-        at: "06:30:00"
+        at: input_datetime.schlafzimmer_weckzeit
     condition:
       - condition: state
         entity_id: input_boolean.schlafzimmer_wecklicht_aktiv
