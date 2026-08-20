@@ -58,7 +58,7 @@ lovelace:
       icon: mdi:printer-3d
       show_in_sidebar: true
       filename: dashboards/3d-drucker.yaml
-    schlafzimmer:
+    schlafzimmer-uebersicht:
       mode: yaml
       title: Schlafzimmer
       icon: mdi:bed
